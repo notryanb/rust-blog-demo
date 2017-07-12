@@ -1,4 +1,4 @@
-#![feature(plugin)]
+#![feature(plugin, custom_derive)]
 #![plugin(rocket_codegen)]
 
 #[macro_use] extern crate lazy_static;
@@ -12,7 +12,7 @@ extern crate r2d2_diesel;
 // extern crate serde_json;
 
 // Server
-use rocket::request::{Outcome, FromRequest};
+use rocket::request::{Outcome, FromRequest, Form};
 use rocket::Outcome::{Success, Failure};
 use rocket::http::Status;
 
@@ -23,14 +23,13 @@ use rocket_contrib::Template;
 
 // Std
 
-
 // DB
 use diesel::prelude::*;
 use diesel::update;
 use diesel::pg::PgConnection;
 use r2d2::{Pool, PooledConnection, GetTimeout};
 use r2d2_diesel::ConnectionManager;
-use bloglib::models::*;
+use bloglib::models::{Post, NewPost};
 use bloglib::*;
 
 #[derive(Serialize)]
@@ -38,10 +37,18 @@ struct TemplateContext {
     data: String
 }
 
+#[derive(FromForm)]
+struct Posting {
+    title: String,
+    body: String,
+}
+
 fn main() {
     rocket::ignite()
         .mount("/", routes![
-            index
+            index,
+            new_post,
+            create_post
         ])
         .launch();
 }
@@ -79,4 +86,37 @@ fn index() -> Template {
     };
 
     Template::render("index", &context)
+}
+
+#[get("/new_post")]
+fn new_post() -> Template {
+    //Need TemplateContext Struct!
+    let context = TemplateContext {
+        data: String::from("Figure out how to not need this arg")
+    };
+
+    Template::render("new-post", &context)
+}
+
+#[post("/create_post", data = "<form>")]
+fn create_post(form: Form<Posting>, db: DB) -> Template {
+    // Take post object and insert into DB
+    use bloglib::schema::posts;
+    use bloglib::schema::posts::dsl::*;
+
+    let post = form.get();
+    let t: &str = &*post.title;
+    let b: &str = &*post.body;
+
+    let new_post = NewPost {
+        title: t,
+        body: b
+    };
+
+    diesel::insert(&new_post).into(posts::table)
+        .get_result::<Post>(db.conn())
+        .expect("Error saving new post");
+
+    // Redirect to index
+    index()
 }
