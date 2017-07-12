@@ -1,6 +1,6 @@
 use schema::posts;
 
-#[derive(Queryable, Debug)]
+#[derive(Queryable, Serialize)]
 pub struct Post {
     pub id: i32,
     pub title: String,

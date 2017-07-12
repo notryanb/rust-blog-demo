@@ -37,6 +37,11 @@ struct TemplateContext {
     data: String
 }
 
+#[derive(Serialize)]
+struct PostList {
+    posts: Vec<Post>
+}
+
 #[derive(FromForm)]
 struct Posting {
     title: String,
@@ -48,7 +53,8 @@ fn main() {
         .mount("/", routes![
             index,
             new_post,
-            create_post
+            create_post,
+            show_posts
         ])
         .launch();
 }
@@ -88,6 +94,21 @@ fn index() -> Template {
     Template::render("index", &context)
 }
 
+#[get("/show_posts")]
+fn show_posts(db: DB) -> Template {
+    use bloglib::schema::posts;
+    use bloglib::schema::posts::dsl::*;
+
+    let post_list =  posts.load::<Post>(db.conn())
+        .expect("Error loading posts");
+
+    let context = PostList {
+        posts: post_list
+    };
+
+    Template::render("show-posts", &context)
+}
+
 #[get("/new_post")]
 fn new_post() -> Template {
     //Need TemplateContext Struct!
@@ -102,7 +123,6 @@ fn new_post() -> Template {
 fn create_post(form: Form<Posting>, db: DB) -> Template {
     // Take post object and insert into DB
     use bloglib::schema::posts;
-    use bloglib::schema::posts::dsl::*;
 
     let post = form.get();
     let t: &str = &*post.title;
