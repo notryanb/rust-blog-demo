@@ -1,0 +1,31 @@
+[package]
+name = "blog_demo"
+version = "0.1.0"
+authors = ["Ryan B <notryanb@gmail.com>"]
+
+[[bin]]
+name = "blog_demo"
+path = "src/bin/main.rs"
+
+[lib]
+name = "bloglib"
+path = "src/lib.rs"
+
+[dependencies]
+# Server
+rocket = "*"
+rocket_codegen = "*"
+rocket_contrib = { version = "*", default-features = false, features = ["handlebars_templates"] }
+serde = "0.9.0"
+serde_derive = "0.9.0"
+serde_json = "0.9.0"
+
+# DB
+diesel = { version = "0.14.0", features = ["postgres"] }
+diesel_codegen = { version = "0.14.0", features = ["postgres"] }
+dotenv = "0.9.0"
+r2d2 = "~0.7.3"
+r2d2-diesel = "~0.14.0"
+lazy_static = "~0.1.0"
+
+
