@@ -25,7 +25,6 @@ use rocket_contrib::Template;
 
 // DB
 use diesel::prelude::*;
-use diesel::update;
 use diesel::pg::PgConnection;
 use r2d2::{Pool, PooledConnection, GetTimeout};
 use r2d2_diesel::ConnectionManager;
@@ -96,7 +95,6 @@ fn index() -> Template {
 
 #[get("/show_posts")]
 fn show_posts(db: DB) -> Template {
-    use bloglib::schema::posts;
     use bloglib::schema::posts::dsl::*;
 
     let post_list =  posts.load::<Post>(db.conn())
@@ -106,21 +104,20 @@ fn show_posts(db: DB) -> Template {
         posts: post_list
     };
 
-    Template::render("show-posts", &context)
+    Template::render("show_posts", &context)
 }
 
 #[get("/new_post")]
 fn new_post() -> Template {
-    //Need TemplateContext Struct!
     let context = TemplateContext {
         data: String::from("Figure out how to not need this arg")
     };
 
-    Template::render("new-post", &context)
+    Template::render("new_post", &context)
 }
 
 #[post("/create_post", data = "<form>")]
-fn create_post(form: Form<Posting>, db: DB) -> Template {
+fn create_post(form: Form<Posting>, db: DB) -> Redirect {
     // Take post object and insert into DB
     use bloglib::schema::posts;
 
@@ -138,5 +135,5 @@ fn create_post(form: Form<Posting>, db: DB) -> Template {
         .expect("Error saving new post");
 
     // Redirect to index
-    index()
+    Redirect::to("/")
 }
