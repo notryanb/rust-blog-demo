@@ -1,33 +1,21 @@
 #![feature(plugin, custom_derive)]
 #![plugin(rocket_codegen)]
 
-#[macro_use] extern crate lazy_static;
 #[macro_use] extern crate serde_derive;
+extern crate diesel;
 extern crate rocket_contrib;
 extern crate rocket;
-extern crate diesel;
 extern crate bloglib;
-extern crate r2d2;
-extern crate r2d2_diesel;
-// extern crate serde_json;
 
 // Server
-use rocket::request::{Outcome, FromRequest, Form};
-use rocket::Outcome::{Success, Failure};
-use rocket::http::Status;
+use rocket::request::Form;
 
 // Routing
-use rocket::Request;
 use rocket::response::Redirect;
 use rocket_contrib::Template;
 
-// Std
-
 // DB
 use diesel::prelude::*;
-use diesel::pg::PgConnection;
-use r2d2::{Pool, PooledConnection, GetTimeout};
-use r2d2_diesel::ConnectionManager;
 use bloglib::models::{Post, NewPost};
 use bloglib::*;
 
@@ -49,6 +37,7 @@ struct Posting {
 
 fn main() {
     rocket::ignite()
+        .manage(create_db_pool())
         .mount("/", routes![
             index,
             new_post,
@@ -57,30 +46,6 @@ fn main() {
         ])
         .attach(Template::fairing())
         .launch();
-}
-
-// DB Setup
-lazy_static! {
-    pub static ref DB_POOL: Pool<ConnectionManager<PgConnection>> = create_db_pool();
-}
-
-
-pub struct DB(PooledConnection<ConnectionManager<PgConnection>>);
-
-impl DB {
-    pub fn conn(&self) -> &PgConnection {
-        &*self.0
-    }
-}
-
-impl<'a, 'r> FromRequest<'a, 'r> for DB {
-    type Error = GetTimeout;
-    fn from_request(_: &'a Request<'r>) -> Outcome<Self, Self::Error> {
-        match DB_POOL.get() {
-            Ok(conn) => Success(DB(conn)),
-            Err(e) => Failure((Status::InternalServerError, e)),
-        }
-    }
 }
 
 // Routing
@@ -95,10 +60,10 @@ fn index() -> Template {
 }
 
 #[get("/show_posts")]
-fn show_posts(db: DB) -> Template {
+fn show_posts(conn: DbConn) -> Template {
     use bloglib::schema::posts::dsl::*;
 
-    let post_list =  posts.load::<Post>(db.conn())
+    let post_list =  posts.load::<Post>(&*conn)
         .expect("Error loading posts");
 
     let context = PostList {
@@ -118,7 +83,7 @@ fn new_post() -> Template {
 }
 
 #[post("/create_post", data = "<form>")]
-fn create_post(form: Form<Posting>, db: DB) -> Redirect {
+fn create_post(form: Form<Posting>, conn: DbConn) -> Redirect {
     // Take post object and insert into DB
     use bloglib::schema::posts;
 
@@ -132,7 +97,7 @@ fn create_post(form: Form<Posting>, db: DB) -> Redirect {
     };
 
     diesel::insert(&new_post).into(posts::table)
-        .get_result::<Post>(db.conn())
+        .get_result::<Post>(&*conn)
         .expect("Error saving new post");
 
     // Redirect to index

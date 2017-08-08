@@ -4,15 +4,26 @@
 extern crate dotenv;
 extern crate r2d2;
 extern crate r2d2_diesel;
+extern crate rocket_contrib;
+extern crate rocket;
 
 pub mod schema;
 pub mod models;
 
+// Std
+use std::ops::Deref;
+
+// DB
 use diesel::pg::PgConnection;
-use r2d2::{ Pool, Config };
+use r2d2::{Config, Pool, PooledConnection};
 use r2d2_diesel::ConnectionManager;
 use dotenv::dotenv;
 use std::env;
+
+// Server
+use rocket::{Outcome, Request, State};
+use rocket::request::{self, FromRequest};
+use rocket::http::Status;
 
 pub fn create_db_pool() -> Pool<ConnectionManager<PgConnection>> {
     dotenv().ok();
@@ -24,3 +35,26 @@ pub fn create_db_pool() -> Pool<ConnectionManager<PgConnection>> {
     let manager = ConnectionManager::<PgConnection>::new(database_url);
     Pool::new(config, manager).expect("Failed to create pool.")
 }
+
+pub struct DbConn(PooledConnection<ConnectionManager<PgConnection>>);
+
+impl<'a, 'r> FromRequest<'a, 'r> for DbConn {
+    type Error = ();
+
+    fn from_request(request: &'a Request<'r>) -> request::Outcome<DbConn, ()> {
+        let pool = request.guard::<State<Pool<ConnectionManager<PgConnection>>>>()?;
+        match pool.get() {
+            Ok(conn) => Outcome::Success(DbConn(conn)),
+            Err(_) => Outcome::Failure((Status::ServiceUnavailable, ()))
+        }
+    }
+}
+
+impl Deref for DbConn {
+    type Target = PgConnection;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
