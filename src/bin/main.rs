@@ -56,6 +56,7 @@ fn main() {
             create_post,
             show_posts
         ])
+        .attach(Template::fairing())
         .launch();
 }
 
