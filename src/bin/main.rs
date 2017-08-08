@@ -53,7 +53,6 @@ fn main() {
         .mount("/", routes![
             index,
             new_post,
-            create_post,
             show_posts
         ])
         .attach(Template::fairing())
@@ -117,24 +116,24 @@ fn new_post() -> Template {
     Template::render("new_post", &context)
 }
 
-#[post("/create_post", data = "<form>")]
-fn create_post(form: Form<Posting>, conn: DbConn) -> Redirect {
-    // Take post object and insert into DB
-    use bloglib::schema::posts;
+// #[post("/create_post", data = "<form>")]
+// fn create_post(form: Form<Posting>, conn: DbConn) -> Redirect {
+//     // Take post object and insert into DB
+//     use bloglib::schema::posts;
 
-    let post = form.get();
-    let t: &str = &*post.title;
-    let b: &str = &*post.body;
+//     let post = form.get();
+//     let t: &str = &*post.title;
+//     let b: &str = &*post.body;
 
-    let new_post = NewPost {
-        title: t,
-        body: b
-    };
+//     let new_post = NewPost {
+//         title: t,
+//         body: b
+//     };
 
-    diesel::insert(&new_post).into(posts::table)
-        .get_result::<Post>(&conn)
-        .expect("Error saving new post");
+//     diesel::insert(&new_post).into(posts::table)
+//         .get_result::<Post>(&conn)
+//         .expect("Error saving new post");
 
-    // Redirect to index
-    Redirect::to("/")
-}
+//     // Redirect to index
+//     Redirect::to("/")
+// }

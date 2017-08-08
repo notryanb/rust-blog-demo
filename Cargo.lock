@@ -7,7 +7,7 @@ dependencies = [
  "dotenv 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 0.1.16 (registry+https://github.com/rust-lang/crates.io-index)",
  "r2d2 0.7.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "r2d2-diesel 0.14.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "r2d2-diesel 0.15.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rocket 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rocket_codegen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rocket_contrib 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -419,7 +419,7 @@ dependencies = [
 
 [[package]]
 name = "r2d2-diesel"
-version = "0.14.0"
+version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "diesel 0.14.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -801,7 +801,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum quick-error 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "3c36987d4978eb1be2e422b1e0423a557923a5c3e7e6f31d5699e9aafaefa469"
 "checksum quote 0.3.15 (registry+https://github.com/rust-lang/crates.io-index)" = "7a6e920b65c65f10b2ae65c831a81a073a89edd28c7cce89475bff467ab4167a"
 "checksum r2d2 0.7.3 (registry+https://github.com/rust-lang/crates.io-index)" = "6c665a538b218e1620093be6643b375d3321837bfc1b30aa18757b7c6546d2ca"
-"checksum r2d2-diesel 0.14.0 (registry+https://github.com/rust-lang/crates.io-index)" = "60d1d0ab8203ebb990408532cd38466eaaa706be7e4c125174dc6f40ecf9c065"
+"checksum r2d2-diesel 0.15.0 (registry+https://github.com/rust-lang/crates.io-index)" = "0ca2d40462e2ddaf9d448f1aa0251ac37310ff0adf6da2eba36a49dd7fd6f034"
 "checksum rand 0.3.16 (registry+https://github.com/rust-lang/crates.io-index)" = "eb250fd207a4729c976794d03db689c9be1d634ab5a1c9da9492a13d8fecbcdf"
 "checksum rayon 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)" = "a77c51c07654ddd93f6cb543c7a849863b03abc7e82591afda6dc8ad4ac3ac4a"
 "checksum rayon-core 1.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "7febc28567082c345f10cddc3612c6ea020fc3297a1977d472cf9fdb73e6e493"
