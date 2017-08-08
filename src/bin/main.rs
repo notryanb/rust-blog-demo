@@ -12,12 +12,12 @@ extern crate r2d2_diesel;
 // extern crate serde_json;
 
 // Server
-use rocket::request::{Outcome, FromRequest, Form};
-use rocket::Outcome::{Success, Failure};
+use std::ops::Deref;
+use rocket::request::{self, FromRequest, Form};
 use rocket::http::Status;
 
 // Routing
-use rocket::Request;
+use rocket::{Request, State, Outcome};
 use rocket::response::Redirect;
 use rocket_contrib::Template;
 
@@ -49,6 +49,7 @@ struct Posting {
 
 fn main() {
     rocket::ignite()
+        .manage(create_db_pool())
         .mount("/", routes![
             index,
             new_post,
@@ -58,26 +59,26 @@ fn main() {
         .launch();
 }
 
-// DB Setup
-lazy_static! {
-    pub static ref DB_POOL: Pool<ConnectionManager<PgConnection>> = create_db_pool();
-}
 
+pub struct DbConn(PooledConnection<ConnectionManager<PgConnection>>);
 
-pub struct DB(PooledConnection<ConnectionManager<PgConnection>>);
+impl Deref for DbConn {
+    type Target = PgConnection;
 
-impl DB {
-    pub fn conn(&self) -> &PgConnection {
-        &*self.0
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 
-impl<'a, 'r> FromRequest<'a, 'r> for DB {
-    type Error = GetTimeout;
-    fn from_request(_: &'a Request<'r>) -> Outcome<Self, Self::Error> {
-        match DB_POOL.get() {
-            Ok(conn) => Success(DB(conn)),
-            Err(e) => Failure((Status::InternalServerError, e)),
+impl<'a, 'r> FromRequest<'a, 'r> for DbConn {
+    type Error = ();
+
+    fn from_request(request: &'a Request<'r>) ->request:: Outcome<DbConn, ()> {
+        let pool = request.guard::<State<Pool>>()?;
+
+        match pool.get() {
+            Ok(conn) => Outcome::Success(DbConn(conn)),
+            Err(_) => Outcome::Failure((Status::ServiceUnavailable, ()))
         }
     }
 }
@@ -94,7 +95,7 @@ fn index() -> Template {
 }
 
 #[get("/show_posts")]
-fn show_posts(db: DB) -> Template {
+fn show_posts(db: DbConn) -> Template {
     use bloglib::schema::posts::dsl::*;
 
     let post_list =  posts.load::<Post>(db.conn())
@@ -117,7 +118,7 @@ fn new_post() -> Template {
 }
 
 #[post("/create_post", data = "<form>")]
-fn create_post(form: Form<Posting>, db: DB) -> Redirect {
+fn create_post(form: Form<Posting>, db: DbConn) -> Redirect {
     // Take post object and insert into DB
     use bloglib::schema::posts;
 
