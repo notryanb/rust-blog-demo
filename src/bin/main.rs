@@ -1,33 +1,21 @@
 #![feature(plugin, custom_derive)]
 #![plugin(rocket_codegen)]
 
-#[macro_use] extern crate lazy_static;
 #[macro_use] extern crate serde_derive;
+extern crate diesel;
 extern crate rocket_contrib;
 extern crate rocket;
-extern crate diesel;
 extern crate bloglib;
-extern crate r2d2;
-extern crate r2d2_diesel;
-// extern crate serde_json;
-
-// Std
-use std::ops::Deref;
 
 // Server
-use rocket::request::{self, FromRequest, Form};
-use rocket::http::Status;
+use rocket::request::Form;
 
 // Routing
-use rocket::{Request, State, Outcome};
 use rocket::response::Redirect;
 use rocket_contrib::Template;
 
 // DB
 use diesel::prelude::*;
-use diesel::pg::PgConnection;
-use r2d2::{Pool, PooledConnection, GetTimeout};
-use r2d2_diesel::ConnectionManager;
 use bloglib::models::{Post, NewPost};
 use bloglib::*;
 
@@ -53,33 +41,11 @@ fn main() {
         .mount("/", routes![
             index,
             new_post,
+            create_post,
             show_posts
         ])
         .attach(Template::fairing())
         .launch();
-}
-
-
-pub struct DbConn(PooledConnection<ConnectionManager<PgConnection>>);
-
-impl<'a, 'r> FromRequest<'a, 'r> for DbConn {
-    type Error = ();
-
-    fn from_request(request: &'a Request<'r>) -> request::Outcome<DbConn, ()> {
-        let pool = request.guard::<State<Pool<ConnectionManager<PgConnection>>>>()?;
-        match pool.get() {
-            Ok(conn) => Outcome::Success(DbConn(conn)),
-            Err(_) => Outcome::Failure((Status::ServiceUnavailable, ()))
-        }
-    }
-}
-
-impl Deref for DbConn {
-    type Target = PgConnection;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
 }
 
 // Routing
@@ -97,7 +63,7 @@ fn index() -> Template {
 fn show_posts(conn: DbConn) -> Template {
     use bloglib::schema::posts::dsl::*;
 
-    let post_list =  posts.load::<Post>(&conn)
+    let post_list =  posts.load::<Post>(&*conn)
         .expect("Error loading posts");
 
     let context = PostList {
@@ -116,24 +82,24 @@ fn new_post() -> Template {
     Template::render("new_post", &context)
 }
 
-// #[post("/create_post", data = "<form>")]
-// fn create_post(form: Form<Posting>, conn: DbConn) -> Redirect {
-//     // Take post object and insert into DB
-//     use bloglib::schema::posts;
+#[post("/create_post", data = "<form>")]
+fn create_post(form: Form<Posting>, conn: DbConn) -> Redirect {
+    // Take post object and insert into DB
+    use bloglib::schema::posts;
 
-//     let post = form.get();
-//     let t: &str = &*post.title;
-//     let b: &str = &*post.body;
+    let post = form.get();
+    let t: &str = &*post.title;
+    let b: &str = &*post.body;
 
-//     let new_post = NewPost {
-//         title: t,
-//         body: b
-//     };
+    let new_post = NewPost {
+        title: t,
+        body: b
+    };
 
-//     diesel::insert(&new_post).into(posts::table)
-//         .get_result::<Post>(&conn)
-//         .expect("Error saving new post");
+    diesel::insert(&new_post).into(posts::table)
+        .get_result::<Post>(&*conn)
+        .expect("Error saving new post");
 
-//     // Redirect to index
-//     Redirect::to("/")
-// }
+    // Redirect to index
+    Redirect::to("/")
+}
