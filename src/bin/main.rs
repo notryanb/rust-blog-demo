@@ -11,8 +11,10 @@ extern crate r2d2;
 extern crate r2d2_diesel;
 // extern crate serde_json;
 
-// Server
+// Std
 use std::ops::Deref;
+
+// Server
 use rocket::request::{self, FromRequest, Form};
 use rocket::http::Status;
 
@@ -20,8 +22,6 @@ use rocket::http::Status;
 use rocket::{Request, State, Outcome};
 use rocket::response::Redirect;
 use rocket_contrib::Template;
-
-// Std
 
 // DB
 use diesel::prelude::*;
@@ -63,24 +63,23 @@ fn main() {
 
 pub struct DbConn(PooledConnection<ConnectionManager<PgConnection>>);
 
+impl<'a, 'r> FromRequest<'a, 'r> for DbConn {
+    type Error = ();
+
+    fn from_request(request: &'a Request<'r>) -> request::Outcome<DbConn, ()> {
+        let pool = request.guard::<State<Pool<ConnectionManager<PgConnection>>>>()?;
+        match pool.get() {
+            Ok(conn) => Outcome::Success(DbConn(conn)),
+            Err(_) => Outcome::Failure((Status::ServiceUnavailable, ()))
+        }
+    }
+}
+
 impl Deref for DbConn {
     type Target = PgConnection;
 
     fn deref(&self) -> &Self::Target {
         &self.0
-    }
-}
-
-impl<'a, 'r> FromRequest<'a, 'r> for DbConn {
-    type Error = ();
-
-    fn from_request(request: &'a Request<'r>) ->request:: Outcome<DbConn, ()> {
-        let pool = request.guard::<State<Pool>>()?;
-
-        match pool.get() {
-            Ok(conn) => Outcome::Success(DbConn(conn)),
-            Err(_) => Outcome::Failure((Status::ServiceUnavailable, ()))
-        }
     }
 }
 
@@ -96,10 +95,10 @@ fn index() -> Template {
 }
 
 #[get("/show_posts")]
-fn show_posts(db: DbConn) -> Template {
+fn show_posts(conn: DbConn) -> Template {
     use bloglib::schema::posts::dsl::*;
 
-    let post_list =  posts.load::<Post>(db.conn())
+    let post_list =  posts.load::<Post>(&conn)
         .expect("Error loading posts");
 
     let context = PostList {
@@ -119,7 +118,7 @@ fn new_post() -> Template {
 }
 
 #[post("/create_post", data = "<form>")]
-fn create_post(form: Form<Posting>, db: DbConn) -> Redirect {
+fn create_post(form: Form<Posting>, conn: DbConn) -> Redirect {
     // Take post object and insert into DB
     use bloglib::schema::posts;
 
@@ -133,7 +132,7 @@ fn create_post(form: Form<Posting>, db: DbConn) -> Redirect {
     };
 
     diesel::insert(&new_post).into(posts::table)
-        .get_result::<Post>(db.conn())
+        .get_result::<Post>(&conn)
         .expect("Error saving new post");
 
     // Redirect to index
