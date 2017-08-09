@@ -7,6 +7,9 @@ extern crate rocket_contrib;
 extern crate rocket;
 extern crate bloglib;
 
+//STD
+use std::time::SystemTime;
+
 // Server
 use rocket::request::Form;
 
@@ -93,7 +96,8 @@ fn create_post(form: Form<Posting>, conn: DbConn) -> Redirect {
 
     let new_post = NewPost {
         title: t,
-        body: b
+        body: b,
+        published_at: None
     };
 
     diesel::insert(&new_post).into(posts::table)
