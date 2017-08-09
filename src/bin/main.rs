@@ -45,6 +45,7 @@ fn main() {
             index,
             new_post,
             create_post,
+            edit_post,
             show_posts
         ])
         .attach(Template::fairing())
@@ -85,9 +86,28 @@ fn new_post() -> Template {
     Template::render("new_post", &context)
 }
 
+#[get("/edit_post/<id>")]
+fn edit_post(id: i32, conn: DbConn) -> Template {
+    // use bloglib::schema::posts::dsl::*;
+    use bloglib::schema::posts::dsl::*;
+
+    let post =  posts.find(id)
+        .get_result::<Post>(&*conn)
+        .expect("Error loading posts");
+
+    let context = Post {
+        id: post.id,
+        title: post.title,
+        body: post.body,
+        published: post.published,
+        published_at: post.published_at
+    };
+
+    Template::render("edit_post", &context)
+}
+
 #[post("/create_post", data = "<form>")]
 fn create_post(form: Form<Posting>, conn: DbConn) -> Redirect {
-    // Take post object and insert into DB
     use bloglib::schema::posts;
 
     let post = form.get();
