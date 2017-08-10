@@ -8,7 +8,7 @@ extern crate rocket;
 extern crate bloglib;
 
 //STD
-use std::time::SystemTime;
+// use std::time::SystemTime;
 
 // Server
 use rocket::request::Form;
@@ -19,8 +19,9 @@ use rocket_contrib::Template;
 
 // DB
 use diesel::prelude::*;
-use bloglib::models::{Post, NewPost};
+use bloglib::models::{Post, NewPost, UpdatePost};
 use bloglib::*;
+use bloglib::schema::posts;
 
 #[derive(Serialize)]
 struct TemplateContext {
@@ -30,6 +31,14 @@ struct TemplateContext {
 #[derive(Serialize)]
 struct PostList {
     posts: Vec<Post>
+}
+
+#[derive(FromForm)]
+struct UpdatedPost {
+    id: i32,
+    title: String,
+    body: String,
+    published: bool
 }
 
 #[derive(FromForm)]
@@ -46,7 +55,8 @@ fn main() {
             new_post,
             create_post,
             edit_post,
-            show_posts
+            show_posts,
+            update_post
         ])
         .attach(Template::fairing())
         .launch();
@@ -86,30 +96,19 @@ fn new_post() -> Template {
     Template::render("new_post", &context)
 }
 
-#[get("/edit_post/<id>")]
-fn edit_post(id: i32, conn: DbConn) -> Template {
-    // use bloglib::schema::posts::dsl::*;
+#[get("/edit_post/<post_id>")]
+fn edit_post(post_id: i32, conn: DbConn) -> Template {
     use bloglib::schema::posts::dsl::*;
 
-    let post =  posts.find(id)
+    let post = posts.find(post_id)
         .get_result::<Post>(&*conn)
         .expect("Error loading posts");
 
-    let context = Post {
-        id: post.id,
-        title: post.title,
-        body: post.body,
-        published: post.published,
-        published_at: post.published_at
-    };
-
-    Template::render("edit_post", &context)
+    Template::render("edit_post", &post)
 }
 
 #[post("/create_post", data = "<form>")]
 fn create_post(form: Form<Posting>, conn: DbConn) -> Redirect {
-    use bloglib::schema::posts;
-
     let post = form.get();
     let t: &str = &*post.title;
     let b: &str = &*post.body;
@@ -124,6 +123,26 @@ fn create_post(form: Form<Posting>, conn: DbConn) -> Redirect {
         .get_result::<Post>(&*conn)
         .expect("Error saving new post");
 
-    // Redirect to index
     Redirect::to("/")
 }
+
+#[post("/update_post", data = "<form>")]
+fn update_post(form: Form<UpdatedPost>, conn: DbConn) -> Redirect {
+    use bloglib::schema::posts::dsl::*;
+
+    let data = form.get();
+
+    diesel::update(posts.find(data.id))
+        .set(&UpdatePost {
+            id: data.id,
+            title: &data.title[..],
+            body: &data.body[..],
+            published: false,
+            published_at: None
+        })
+        .get_result::<Post>(&*conn)
+        .expect("Error updating Post");
+
+    Redirect::to("/")
+}
+
