@@ -7,11 +7,10 @@
   <body>
   <a href="/">> Home</a>
     <h1>Here are the Posts</h1>
-    <p>Rendering: {{data}}</p>
 
     <div>
       {{#each posts}}
-        <h4>{{this.title}}</h4>
+        <h4>{{this.title}}</h4> <a href="/edit_post/{{this.id}}">Edit</a>
         <p>{{this.body}}</p>
       {{/each}}
     </div>
