@@ -8,13 +8,13 @@ extern crate rocket;
 extern crate bloglib;
 
 //STD
-// use std::time::SystemTime;
+use std::path::{Path, PathBuf};
 
 // Server
 use rocket::request::Form;
 
 // Routing
-use rocket::response::Redirect;
+use rocket::response::{Redirect, NamedFile};
 use rocket_contrib::Template;
 
 // DB
@@ -50,6 +50,7 @@ fn main() {
     rocket::ignite()
         .manage(create_db_pool())
         .mount("/", routes![
+            files,
             index,
             new_post,
             create_post,
@@ -64,12 +65,13 @@ fn main() {
 // Routing
 #[get("/")]
 fn index() -> Template {
-    //Need TemplateContext Struct!
-    let context = TemplateContext {
-        data: String::from("A String")
-    };
 
-    Template::render("index", &context)
+    Template::render("index", TemplateContext { data: String::from("Empty")})
+}
+
+#[get("/assets/<file..>")]
+fn files(file: PathBuf) -> Option<NamedFile> {
+    NamedFile::open(Path::new("assets/stylesheets/").join(file)).ok()
 }
 
 #[get("/show_posts")]
