@@ -38,7 +38,6 @@ struct UpdatedPost {
     id: i32,
     title: String,
     body: String,
-    published: bool
 }
 
 #[derive(FromForm)]
