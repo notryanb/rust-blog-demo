@@ -19,7 +19,7 @@ use rocket_contrib::Template;
 
 // DB
 use diesel::prelude::*;
-use bloglib::models::{Post, NewPost, UpdatePost};
+use bloglib::models::{User, NewUser, UpdateUser, Post, NewPost, UpdatePost};
 use bloglib::*;
 use bloglib::schema::posts;
 
@@ -34,16 +34,16 @@ struct PostList {
 }
 
 #[derive(FromForm)]
-struct UpdatedPost {
+struct UpdatePostForm {
     id: i32,
     title: String,
-    body: String,
+    content: String,
 }
 
 #[derive(FromForm)]
 struct Posting {
     title: String,
-    body: String,
+    content: String,
 }
 
 fn main() {
@@ -54,8 +54,8 @@ fn main() {
             index,
             new_post,
             create_post,
+            show_post,
             edit_post,
-            show_posts,
             update_post
         ])
         .attach(Template::fairing())
@@ -64,9 +64,18 @@ fn main() {
 
 // Routing
 #[get("/")]
-fn index() -> Template {
+fn index(conn: DbConn) -> Template {
+    use bloglib::schema::posts::dsl::*;
 
-    Template::render("index", TemplateContext { data: String::from("Empty")})
+    let post_list =  posts.order(id.desc())
+        .load::<Post>(&*conn)
+        .expect("Error loading posts");
+
+    let context = PostList {
+        posts: post_list
+    };
+
+    Template::render("index", &context)
 }
 
 #[get("/assets/<file..>")]
@@ -74,18 +83,15 @@ fn files(file: PathBuf) -> Option<NamedFile> {
     NamedFile::open(Path::new("assets/stylesheets/").join(file)).ok()
 }
 
-#[get("/show_posts")]
-fn show_posts(conn: DbConn) -> Template {
+#[get("/show_post/<post_id>")]
+fn show_post(post_id: i32, conn: DbConn) -> Template {
     use bloglib::schema::posts::dsl::*;
 
-    let post_list =  posts.load::<Post>(&*conn)
+    let post = posts.find(post_id)
+        .get_result::<Post>(&*conn)
         .expect("Error loading posts");
 
-    let context = PostList {
-        posts: post_list
-    };
-
-    Template::render("show_posts", &context)
+    Template::render("show_post", &post)
 }
 
 #[get("/new_post")]
@@ -112,12 +118,12 @@ fn edit_post(post_id: i32, conn: DbConn) -> Template {
 fn create_post(form: Form<Posting>, conn: DbConn) -> Redirect {
     let post = form.get();
     let t: &str = &*post.title;
-    let b: &str = &*post.body;
+    let b: &str = &*post.content;
 
     let new_post = NewPost {
+        user_id: 1, // Hard code user Id
         title: t,
-        body: b,
-        published_at: None
+        content: b,
     };
 
     diesel::insert(&new_post).into(posts::table)
@@ -128,22 +134,22 @@ fn create_post(form: Form<Posting>, conn: DbConn) -> Redirect {
 }
 
 #[post("/update_post", data = "<form>")]
-fn update_post(form: Form<UpdatedPost>, conn: DbConn) -> Redirect {
+fn update_post(form: Form<UpdatePostForm>, conn: DbConn) -> Redirect {
     use bloglib::schema::posts::dsl::*;
 
     let data = form.get();
 
+    let update_post = UpdatePost {
+        user_id: None,
+        title: &data.title[..],
+        content: &data.content[..],
+        published: false,
+    };
+
     diesel::update(posts.find(data.id))
-        .set(&UpdatePost {
-            id: data.id,
-            title: &data.title[..],
-            body: &data.body[..],
-            published: false,
-            published_at: None
-        })
+        .set(&update_post)
         .get_result::<Post>(&*conn)
         .expect("Error updating Post");
 
     Redirect::to("/")
 }
-

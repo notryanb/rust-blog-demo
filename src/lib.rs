@@ -1,3 +1,5 @@
+#![recursion_limit="128"] // For macro expansion
+
 #[macro_use] extern crate diesel_codegen;
 #[macro_use] extern crate serde_derive;
 #[macro_use] extern crate diesel;
@@ -14,7 +16,7 @@ pub mod models;
 use std::ops::Deref;
 
 // DB
-use diesel::pg::PgConnection;
+use diesel::prelude::*;
 use r2d2::{Config, Pool, PooledConnection};
 use r2d2_diesel::ConnectionManager;
 use dotenv::dotenv;
