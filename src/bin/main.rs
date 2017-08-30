@@ -41,7 +41,7 @@ struct UpdatePostForm {
 }
 
 #[derive(FromForm)]
-struct Posting {
+struct CreatePostForm {
     title: String,
     content: String,
 }
@@ -115,15 +115,13 @@ fn edit_post(post_id: i32, conn: DbConn) -> Template {
 }
 
 #[post("/create_post", data = "<form>")]
-fn create_post(form: Form<Posting>, conn: DbConn) -> Redirect {
+fn create_post(form: Form<CreatePostForm>, conn: DbConn) -> Redirect {
     let post = form.get();
-    let t: &str = &*post.title;
-    let b: &str = &*post.content;
 
     let new_post = NewPost {
         user_id: 1, // Hard code user Id
-        title: t,
-        content: b,
+        title: &post.title,
+        content: &post.content,
     };
 
     diesel::insert(&new_post).into(posts::table)
