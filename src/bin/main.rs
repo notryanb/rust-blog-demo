@@ -1,17 +1,22 @@
 #![feature(plugin, custom_derive)]
 #![plugin(rocket_codegen)]
 
-#[macro_use] extern crate serde_derive;
 extern crate diesel;
-extern crate rocket_contrib;
-extern crate rocket;
 extern crate bloglib;
+extern crate rocket;
+extern crate rocket_contrib;
 
-//STD
+// STD
 use std::path::{Path, PathBuf};
 
-// Server
+// // Helpers
 use rocket::request::Form;
+
+// Form Models
+use bloglib::form_models::{CreatePostForm, UpdatePostForm};
+
+// View Models
+use bloglib::view_models::{TemplateContext, PostList};
 
 // Routing
 use rocket::response::{Redirect, NamedFile};
@@ -19,32 +24,9 @@ use rocket_contrib::Template;
 
 // DB
 use diesel::prelude::*;
-use bloglib::models::*;
 use bloglib::*;
+use bloglib::models::*;
 use bloglib::schema::posts;
-
-#[derive(Serialize)]
-struct TemplateContext {
-    data: String
-}
-
-#[derive(Serialize)]
-struct PostList {
-    posts: Vec<Post>
-}
-
-#[derive(FromForm)]
-struct UpdatePostForm {
-    id: i32,
-    title: String,
-    content: String,
-}
-
-#[derive(FromForm)]
-struct CreatePostForm {
-    title: String,
-    content: String,
-}
 
 fn main() {
     rocket::ignite()

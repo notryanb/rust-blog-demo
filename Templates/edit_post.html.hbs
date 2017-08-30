@@ -12,7 +12,7 @@
         <form id="new-post" method="post" action="/update_post">
           <input name="id" type="hidden" value="{{id}}" required>
           <input name="title" type="text" placeholder="{{title}}" required>
-          <input name="content" type="textarea" rows=10 columns = 50 placeholder="{{content}}" required>
+          <textarea name="content" rows=10 columns = 50 placeholder="{{content}}" required></textarea>
           <button type="submit">Submit Post</button>
         </form>
       </div>
