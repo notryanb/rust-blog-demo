@@ -3,17 +3,19 @@
   <head>
     <meta charset="utf-8" />
     <title>Rust Blog</title>
+    <link rel="stylesheet" type="text/css" href="/assets/main.css">
   </head>
   <body>
-    <a href="/">> Home</a>
-    <a href="/show_posts">> Show Posts</a>
-    <h1>Edit a Post</h1>
-    <form id="new-post" method="post" action="/update_post">
-      <input name="id" type="hidden" value="{{id}}" required>
-      <input name="title" type="text" placeholder="{{title}}" required>
-      <input name="content" type="text" placeholder="{{content}}" required>
-      <button type="submit">Submit Post</button>
-    </form>
+    <div class="container">
+        <a href="/">> Home</a>
+        <h1>Edit a Post</h1>
+        <form id="new-post" method="post" action="/update_post">
+          <input name="id" type="hidden" value="{{id}}" required>
+          <input name="title" type="text" placeholder="{{title}}" required>
+          <input name="content" type="textarea" rows=10 columns = 50 placeholder="{{content}}" required>
+          <button type="submit">Submit Post</button>
+        </form>
+      </div>
   </body>
 </html>
 
