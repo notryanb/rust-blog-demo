@@ -1,4 +1,34 @@
+* {
+  box-sizing: border-box;
+}
+
 body {
-  background-color: #696;
-  color: #ceb;
+  background-color: #92d492;
+  color: #212121;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  font-style: normal;
+  font-family: Menlo,Monaco,"Droid Sans","Lucida Console",
+              "Liberation Mono","DejaVu Sans Mono","Bitstream Vera Sans Mono",
+              "Courier New",monospace,serif;
+}
+
+div.container {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+article { display: block; }
+
+a {
+  text-decoration: none;
+  color: #fff;
+  cursor: pointer;
+  border-bottom: 1px solid #fff;
+}
+
+a:hover {
+  background-color: #212121;
+  color: #efefef;
 }
