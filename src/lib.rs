@@ -1,3 +1,5 @@
+#![recursion_limit="128"] // For macro expansion
+
 #[macro_use] extern crate diesel_codegen;
 #[macro_use] extern crate serde_derive;
 #[macro_use] extern crate diesel;
