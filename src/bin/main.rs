@@ -16,7 +16,7 @@ use rocket_contrib::Template;
 
 // DB
 use diesel::prelude::*;
-use bloglib::models::{User, NewUser, UpdateUser, Post, NewPost, UpdatePost};
+use bloglib::models::*;
 use bloglib::*;
 use bloglib::schema::posts;
 
