@@ -3,11 +3,21 @@
   <head>
     <meta charset="utf-8" />
     <title>Rust Blog</title>
+    <link rel="stylesheet" type="text/css" href="/assets/main.css">
   </head>
   <body>
-    <a href="/new_post">> Create Post</a>
-    <a href="/show_posts">> Show Posts</a>
-    <h1>Templating works!</h1>
-    <p>Rendering: {{data}}</p>
+    <div class="container">
+      <article class="home">
+        <a href="/new_post">> Create Post</a>
+        <h1>Rust Blog</h1>
+
+        {{#each posts}}
+          <div class="post-item">
+            <span><a href="/show_post/{{this.id}}">{{this.title}}</a></span>
+          </div>
+        {{/each}}
+
+      </article>
+    </div>
   </body>
 </html>

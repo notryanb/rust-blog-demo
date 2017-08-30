@@ -7,11 +7,14 @@ extern crate rocket_contrib;
 extern crate rocket;
 extern crate bloglib;
 
+//STD
+use std::path::{Path, PathBuf};
+
 // Server
 use rocket::request::Form;
 
 // Routing
-use rocket::response::Redirect;
+use rocket::response::{Redirect, NamedFile};
 use rocket_contrib::Template;
 
 // DB
@@ -47,11 +50,12 @@ fn main() {
     rocket::ignite()
         .manage(create_db_pool())
         .mount("/", routes![
+            files,
             index,
             new_post,
             create_post,
+            show_post,
             edit_post,
-            show_posts,
             update_post
         ])
         .attach(Template::fairing())
@@ -60,27 +64,34 @@ fn main() {
 
 // Routing
 #[get("/")]
-fn index() -> Template {
-    //Need TemplateContext Struct!
-    let context = TemplateContext {
-        data: String::from("A String")
-    };
-
-    Template::render("index", &context)
-}
-
-#[get("/show_posts")]
-fn show_posts(conn: DbConn) -> Template {
+fn index(conn: DbConn) -> Template {
     use bloglib::schema::posts::dsl::*;
 
-    let post_list =  posts.load::<Post>(&*conn)
+    let post_list =  posts.order(id.desc())
+        .load::<Post>(&*conn)
         .expect("Error loading posts");
 
     let context = PostList {
         posts: post_list
     };
 
-    Template::render("show_posts", &context)
+    Template::render("index", &context)
+}
+
+#[get("/assets/<file..>")]
+fn files(file: PathBuf) -> Option<NamedFile> {
+    NamedFile::open(Path::new("assets/stylesheets/").join(file)).ok()
+}
+
+#[get("/show_post/<post_id>")]
+fn show_post(post_id: i32, conn: DbConn) -> Template {
+    use bloglib::schema::posts::dsl::*;
+
+    let post = posts.find(post_id)
+        .get_result::<Post>(&*conn)
+        .expect("Error loading posts");
+
+    Template::render("show_post", &post)
 }
 
 #[get("/new_post")]
@@ -142,4 +153,3 @@ fn update_post(form: Form<UpdatePostForm>, conn: DbConn) -> Redirect {
 
     Redirect::to("/")
 }
-

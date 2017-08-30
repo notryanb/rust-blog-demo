@@ -16,7 +16,7 @@ pub mod models;
 use std::ops::Deref;
 
 // DB
-use diesel::pg::PgConnection;
+use diesel::prelude::*;
 use r2d2::{Config, Pool, PooledConnection};
 use r2d2_diesel::ConnectionManager;
 use dotenv::dotenv;
