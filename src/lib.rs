@@ -1,16 +1,20 @@
 #![recursion_limit="128"] // For macro expansion
 
+#![feature(plugin, custom_derive)]
+#![plugin(rocket_codegen)]
+
 #[macro_use] extern crate diesel_codegen;
 #[macro_use] extern crate serde_derive;
 #[macro_use] extern crate diesel;
 extern crate dotenv;
 extern crate r2d2;
 extern crate r2d2_diesel;
-extern crate rocket_contrib;
 extern crate rocket;
 
 pub mod schema;
 pub mod models;
+pub mod form_models;
+pub mod view_models;
 
 // Std
 use std::ops::Deref;
