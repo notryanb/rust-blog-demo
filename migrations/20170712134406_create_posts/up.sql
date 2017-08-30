@@ -1,7 +1,7 @@
 CREATE TABLE posts (
   id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL,
   title VARCHAR NOT NULL,
-  body TEXT NOT NULL,
-  published BOOLEAN NOT NULL DEFAULT 'f',
-  published_at TIMESTAMP
+  content TEXT NOT NULL,
+  published BOOLEAN NOT NULL DEFAULT 'f'
 )
