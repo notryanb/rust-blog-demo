@@ -6,7 +6,7 @@ use rocket::request::{FromRequest, Request, Outcome};
 // use serde::ser::SerializeStruct;
 use schema::users;
 
-#[derive(Debug, Identifiable, Queryable, Deserialize)]
+#[derive(Debug, Identifiable, Queryable, Serialize, Deserialize)]
 pub struct User {
     pub id: i32,
     pub first_name: String,
