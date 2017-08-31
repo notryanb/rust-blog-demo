@@ -4,8 +4,8 @@
     <a href="/">> Home</a>
     <h1>Login</h1>
     <form id="login" method="post" action="/auth/login">
-        <input name="login" type="text" required>
-        <input name="password" type="password" required>
+        <input name="login" type="text" placeholder="email" required>
+        <input name="password" type="password" placeholder="password" required>
         <button type="submit">Submit Post</button>
     </form>
 {% endblock main %}

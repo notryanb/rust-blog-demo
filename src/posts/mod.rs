@@ -115,4 +115,3 @@ pub fn routes() -> Vec<rocket::Route> {
         update
     ]
 }
-
