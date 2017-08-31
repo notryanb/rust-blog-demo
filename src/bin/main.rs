@@ -6,7 +6,7 @@ extern crate rocket;
 extern crate rocket_contrib;
 
 use bloglib::*;
-use bloglib::{posts};
+use bloglib::{auth, posts};
 
 use rocket_contrib::Template;
 use rocket::response::{Redirect, NamedFile};
@@ -18,6 +18,7 @@ fn main() {
     rocket::ignite()
         .manage(create_db_pool())
         .mount("/", routes![index, files])
+        .mount("/auth", auth::routes())
         .mount("/posts", posts::routes())
         .attach(Template::fairing())
         .launch();
