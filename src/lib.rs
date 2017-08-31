@@ -1,35 +1,31 @@
-#![recursion_limit="128"] // For macro expansion
+#![recursion_limit="128"]
 
 #![feature(plugin, custom_derive)]
 #![plugin(rocket_codegen)]
 
+#[macro_use] extern crate diesel;
 #[macro_use] extern crate diesel_codegen;
 #[macro_use] extern crate serde_derive;
-#[macro_use] extern crate diesel;
 extern crate dotenv;
 extern crate r2d2;
 extern crate r2d2_diesel;
 extern crate rocket;
+extern crate rocket_contrib;
+extern crate serde;
 
-pub mod schema;
-pub mod models;
-pub mod form_models;
-pub mod view_models;
-
-// Std
-use std::ops::Deref;
-
-// DB
+use dotenv::dotenv;
 use diesel::prelude::*;
 use r2d2::{Config, Pool, PooledConnection};
 use r2d2_diesel::ConnectionManager;
-use dotenv::dotenv;
-use std::env;
-
-// Server
 use rocket::{Outcome, Request, State};
-use rocket::request::{self, FromRequest};
 use rocket::http::Status;
+use rocket::request::{self, FromRequest};
+use std::env;
+use std::ops::Deref;
+
+pub mod schema;
+pub mod posts;
+pub mod auth;
 
 pub fn create_db_pool() -> Pool<ConnectionManager<PgConnection>> {
     dotenv().ok();
