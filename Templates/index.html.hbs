@@ -8,12 +8,12 @@
   <body>
     <div class="container">
       <article class="home">
-        <a href="/new_post">> Create Post</a>
+        <a href="/posts/new">> Create Post</a>
         <h1>Rust Blog</h1>
 
         {{#each posts}}
           <div class="post-item">
-            <span><a href="/show_post/{{this.id}}">{{this.title}}</a></span>
+            <span><a href="/posts/show/{{this.id}}">{{this.title}}</a></span>
           </div>
         {{/each}}
 
