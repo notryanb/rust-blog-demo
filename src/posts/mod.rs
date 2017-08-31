@@ -11,61 +11,58 @@ use rocket;
 use rocket::request::Form;
 use rocket::response::{Redirect};
 use rocket_contrib::Template;
-
-#[derive(Serialize)]
-pub struct TemplateContext {
-        pub data: String
-}
-
-#[derive(Serialize)]
-pub struct PostList {
-        pub posts: Vec<Post>
-}
+use tera::Context;
 
 #[get("/")]
 fn index(conn: DbConn) -> Template {
     use super::schema::posts::dsl::*;
 
+    let mut context = Context::new();
+
     let post_list =  posts.order(id.desc())
         .load::<Post>(&*conn)
         .expect("Error loading posts");
 
-    let context = PostList {
-        posts: post_list
-    };
+    context.add("posts", &post_list);
 
-    Template::render("index", &context)
+    Template::render("posts/index", &context)
 }
 
 #[get("/show/<post_id>")]
 fn show(post_id: i32, conn: DbConn) -> Template {
     use super::schema::posts::dsl::*;
 
+    let mut context = Context::new();
+
     let post = posts.find(post_id)
         .get_result::<Post>(&*conn)
         .expect("Error loading posts");
 
-    Template::render("show_post", &post)
+    context.add("post", &post);
+
+    Template::render("posts/show", &context.as_json().unwrap())
 }
 
 #[get("/new")]
 fn new() -> Template {
-    let context = TemplateContext {
-        data: String::from("Figure out how to not need this arg")
-    };
+    let context = Context::new();
 
-    Template::render("new_post", &context)
+    Template::render("posts/new", &context)
 }
 
 #[get("/edit/<post_id>")]
 fn edit(post_id: i32, conn: DbConn) -> Template {
     use super::schema::posts::dsl::*;
 
+    let mut context = Context::new();
+
     let post = posts.find(post_id)
         .get_result::<Post>(&*conn)
         .expect("Error loading posts");
 
-    Template::render("edit_post", &post)
+    context.add("post", &post);
+
+    Template::render("posts/edit", &context)
 }
 
 #[post("/create", data = "<form>")]
