@@ -1,0 +1,11 @@
+{% extends "main" %}
+
+{% block main %}
+    <a href="/">> Home</a>
+    <h1>Create a New Post</h1>
+    <form id="new-post" method="post" action="/posts/create">
+        <input name="title" type="text" placeholder="Title" required>
+        <textarea name="content" rows=10 columns=50 placeholder="Content" required></textarea>
+        <button type="submit">Submit Post</button>
+    </form>
+{% endblock main %}

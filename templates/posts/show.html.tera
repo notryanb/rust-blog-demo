@@ -1,0 +1,10 @@
+{% extends "main" %}
+
+{% block main %}
+    <a href="/">> Home</a>
+    <a href="/posts/edit/{{ post.id }}">> Edit This Post</a>
+    <article class="post">
+      <h2>{{ post.title }}</h2>
+      <p>{{ post.content }}</p>
+    </article>
+{% endblock main %}

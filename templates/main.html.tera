@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>{% block title %} Rust Blog {% endblock title %}</title>
+        <link rel="stylesheet" type="text/css" href="/assets/main.css">
+    </head>
+    <body>
+        <div class="container">
+            {% block main %}{% endblock main %}
+        </div>
+    </body>
+</html>
