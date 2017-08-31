@@ -1,5 +1,5 @@
+use auth::models::{User};
 use schema::posts;
-use models::users::User;
 
 #[derive(Associations, Identifiable, Queryable, Serialize)]
 #[belongs_to(User)]
