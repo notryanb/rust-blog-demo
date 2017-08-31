@@ -12,6 +12,7 @@ extern crate r2d2_diesel;
 extern crate rocket;
 extern crate rocket_contrib;
 extern crate serde;
+extern crate tera;
 
 use dotenv::dotenv;
 use diesel::prelude::*;
