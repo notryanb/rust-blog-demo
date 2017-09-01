@@ -47,9 +47,9 @@ impl ser::Serialize for User {
     {
         let mut s = serializer.serialize_struct("User", 6)?;
         s.serialize_field("id", &self.id)?;
-        s.serialize_field("first_name", &self.id)?;
-        s.serialize_field("last_name", &self.id)?;
-        s.serialize_field("email", &self.id)?;
+        s.serialize_field("first_name", &self.first_name)?;
+        s.serialize_field("last_name", &self.last_name)?;
+        s.serialize_field("email", &self.email)?;
         s.serialize_field("is_anonymous", &(self.id == -1))?;
         s.end()
     }
@@ -62,7 +62,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for User{
         let request = request.clone();
         let mut cookies = request.cookies();
 
-        if let Some(cookie) = cookies.get_private("session_auth") {
+        if let Some(cookie) = cookies.get_private("sessions_auth") {
             let user: Result<User, _> = serde_json::from_str(cookie.value());
             if user.is_ok() {
                 return Success(user.unwrap());
@@ -89,7 +89,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for AuthenticatedUser{
         let request = request.clone();
         let mut cookies = request.cookies();
 
-        if let Some(cookie) = cookies.get_private("session_auth") {
+        if let Some(cookie) = cookies.get_private("sessions_auth") {
             let user: Result<User, _> = serde_json::from_str(cookie.value());
             if user.is_err() {
                 return Failure((Status::raw(600), ()));
@@ -112,7 +112,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for AnonymousUser{
         let request = request.clone();
         let mut cookies = request.cookies();
 
-        if let Some(cookie) = cookies.get_private("session_auth") {
+        if let Some(cookie) = cookies.get_private("sessions_auth") {
             let user: Result<User, _> = serde_json::from_str(cookie.value());
             if user.is_ok() {
                 return Failure((Status::raw(601), ()));
