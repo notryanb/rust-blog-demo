@@ -3,6 +3,7 @@ mod forms;
 
 use self::models::*;
 use self::forms::*;
+use auth::models::*;
 use super::DbConn;
 
 use diesel;
@@ -14,7 +15,7 @@ use rocket_contrib::Template;
 use tera::Context;
 
 #[get("/")]
-fn index(conn: DbConn) -> Template {
+fn index(user: User, conn: DbConn) -> Template {
     use super::schema::posts::dsl::*;
 
     let mut context = Context::new();
@@ -24,6 +25,7 @@ fn index(conn: DbConn) -> Template {
         .expect("Error loading posts");
 
     context.add("posts", &post_list);
+    context.add("user", &user);
 
     Template::render("posts/index", &context)
 }
@@ -43,6 +45,7 @@ fn show(post_id: i32, conn: DbConn) -> Template {
     Template::render("posts/show", &context.as_json().unwrap())
 }
 
+// TODO: Authenticate
 #[get("/new")]
 fn new() -> Template {
     let context = Context::new();
@@ -50,6 +53,7 @@ fn new() -> Template {
     Template::render("posts/new", &context)
 }
 
+// TODO: Authenticate
 #[get("/edit/<post_id>")]
 fn edit(post_id: i32, conn: DbConn) -> Template {
     use super::schema::posts::dsl::*;
@@ -65,6 +69,7 @@ fn edit(post_id: i32, conn: DbConn) -> Template {
     Template::render("posts/edit", &context)
 }
 
+// TODO: Authenticate
 #[post("/create", data = "<form>")]
 fn create(form: Form<CreatePostForm>, conn: DbConn) -> Redirect {
     use schema::posts;
@@ -84,6 +89,8 @@ fn create(form: Form<CreatePostForm>, conn: DbConn) -> Redirect {
     Redirect::to("/")
 }
 
+
+// TODO: Authenticate
 #[post("/update", data = "<form>")]
 fn update(form: Form<UpdatePostForm>, conn: DbConn) -> Redirect {
     use super::schema::posts::dsl::*;
@@ -104,6 +111,10 @@ fn update(form: Form<UpdatePostForm>, conn: DbConn) -> Redirect {
 
     Redirect::to("/")
 }
+
+// TODO: Delete Post
+// TODO: Authenticate
+
 
 pub fn routes() -> Vec<rocket::Route> {
     routes![
