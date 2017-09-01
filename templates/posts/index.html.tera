@@ -2,9 +2,7 @@
 
 {% block main %}
     <article class="home">
-        <a href="/posts/new">> Create Post</a>
         <h1>Rust Blog</h1>
-
         {% for post in posts %}
             <div class="post-item">
               <span><a href="/posts/show/{{ post.id }}">{{ post.title }}</a></span>
