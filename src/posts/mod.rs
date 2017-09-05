@@ -32,7 +32,7 @@ fn index(user: User, conn: DbConn) -> Template {
 }
 
 #[get("/show/<post_id>")]
-fn show(post_id: i32, conn: DbConn) -> Template {
+fn show(user: User, post_id: i32, conn: DbConn) -> Template {
     use super::schema::posts::dsl::*;
 
     let mut context = Context::new();
@@ -43,6 +43,7 @@ fn show(post_id: i32, conn: DbConn) -> Template {
         .expect("Error loading posts");
 
     context.add("post", &post);
+    context.add("user", &user);
 
     Template::render("posts/show", &context.as_json().unwrap())
 }
@@ -68,6 +69,7 @@ fn edit(user: AuthenticatedUser, post_id: i32, conn: DbConn) -> Template {
         .expect("Error loading posts");
 
     context.add("post", &post);
+    context.add("user", &user);
 
     Template::render("posts/edit", &context)
 }
@@ -99,6 +101,7 @@ fn create(user: AuthenticatedUser, form: Form<CreatePostForm>, conn: DbConn) -> 
 fn update(user: AuthenticatedUser, form: Form<UpdatePostForm>, conn: DbConn) -> Redirect {
     use super::schema::posts::dsl::*;
 
+    // TODO: Check auth.id == post.user_id
     let data = form.get();
 
     let update_post = UpdatePost {

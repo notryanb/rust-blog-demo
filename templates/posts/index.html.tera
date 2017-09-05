@@ -8,8 +8,5 @@
               <span><a href="/posts/show/{{ post.id }}">{{ post.title }}</a></span>
             </div>
         {% endfor %}
-<div>{{ user.first_name }}</div>
-<div>{{ user.last_name }}</div>
-<div>{{ user.is_anonymous }}</div>
     </article>
 {% endblock main %}

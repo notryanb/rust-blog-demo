@@ -73,10 +73,14 @@ fn authenticate(
     Redirect::to("/")
 }
 
-// TODO: Logout Path.
-//
+#[get("/logout")]
+fn logout(user: AuthenticatedUser, mut cookies: Cookies, conn:DbConn) -> Redirect {
+    cookies.remove_private(Cookie::named("sessions_auth"));
+    Redirect::to("/")
+}
+
 // TODO: Register Path.
 
 pub fn routes() -> Vec<rocket::Route> {
-    routes![authenticate, login]
+    routes![authenticate, login, logout]
 }
