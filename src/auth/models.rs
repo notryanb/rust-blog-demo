@@ -4,7 +4,7 @@
 
 use rocket::outcome::Outcome::*;
 use rocket::http::Status;
-use rocket::request::{FromRequest, Request, Outcome};
+use rocket::request::{FromRequest, Outcome, Request};
 use serde_json;
 use serde::ser;
 use serde::ser::SerializeStruct;
@@ -21,23 +21,23 @@ pub struct User {
     pub first_name: String,
     pub last_name: String,
     pub email: String,
-    pub password: String
+    #[serde(skip_serializing, skip_deserializing)] pub password: String,
 }
 
 #[derive(Insertable)]
-#[table_name="users"]
-pub struct NewUser<'a>{
+#[table_name = "users"]
+pub struct NewUser<'a> {
     pub first_name: &'a str,
     pub last_name: &'a str,
-    pub email: &'a str
+    pub email: &'a str,
 }
 
 #[derive(AsChangeset)]
-#[table_name="users"]
+#[table_name = "users"]
 pub struct UpdateUser<'a> {
     pub first_name: &'a str,
     pub last_name: &'a str,
-    pub email: &'a str
+    pub email: &'a str,
 }
 
 impl ser::Serialize for User {
@@ -55,7 +55,7 @@ impl ser::Serialize for User {
     }
 }
 
-impl<'a, 'r> FromRequest<'a, 'r> for User{
+impl<'a, 'r> FromRequest<'a, 'r> for User {
     type Error = ();
 
     fn from_request(request: &'a Request<'r>) -> Outcome<User, ()> {
@@ -82,7 +82,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for User{
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AuthenticatedUser(pub User);
 
-impl<'a, 'r> FromRequest<'a, 'r> for AuthenticatedUser{
+impl<'a, 'r> FromRequest<'a, 'r> for AuthenticatedUser {
     type Error = ();
 
     fn from_request(request: &'a Request<'r>) -> Outcome<AuthenticatedUser, ()> {
@@ -105,7 +105,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for AuthenticatedUser{
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AnonymousUser(pub User);
 
-impl<'a, 'r> FromRequest<'a, 'r> for AnonymousUser{
+impl<'a, 'r> FromRequest<'a, 'r> for AnonymousUser {
     type Error = ();
 
     fn from_request(request: &'a Request<'r>) -> Outcome<AnonymousUser, ()> {

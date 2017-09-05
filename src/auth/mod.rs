@@ -26,13 +26,13 @@ fn login(user: AnonymousUser) -> Template {
     Template::render("auth/login", &context)
 }
 
-#[post("/login", data="<form>")]
+#[post("/login", data = "<form>")]
 fn authenticate(
-        user: AnonymousUser,
-        form: Form<LoginForm>, 
-        mut cookies: Cookies,
-        conn: DbConn
-    ) -> Redirect {
+    user: AnonymousUser,
+    form: Form<LoginForm>,
+    mut cookies: Cookies,
+    conn: DbConn,
+) -> Redirect {
     use super::schema::users::dsl::*;
 
     // Need to validate a few things
@@ -44,12 +44,13 @@ fn authenticate(
     //  * In either error case, just report user or password not found
     //  * Make illegal states unrepresentable....aka, UnAuthenticatedUser..?
     //  * Think about serialization...The password.. even hashed shouldn't be
-    //      available to the client at all. Need to custom implement Serialize 
+    //      available to the client at all. Need to custom implement Serialize
     //      trait for user?
-   
+
     if cookies.get("sessions_auth").is_none() {
         let form = form.get();
-        let found_users = users.filter(email.eq(&form.email))
+        let found_users = users
+            .filter(email.eq(&form.email))
             .limit(1)
             .load::<User>(&*conn)
             .expect("Didn't find any users");
@@ -79,5 +80,3 @@ fn authenticate(
 pub fn routes() -> Vec<rocket::Route> {
     routes![authenticate, login]
 }
-
-
