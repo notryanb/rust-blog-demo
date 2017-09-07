@@ -1,12 +1,11 @@
 use bcrypt;
-// use bcrypt::{DEFAULT_COST, hash};
-// use diesel;
 use diesel::prelude::*;
 use rocket;
 use rocket_contrib::Template;
 use rocket::http::{Cookie, Cookies};
-use rocket::response::Redirect;
-use rocket::request::Form;
+
+use rocket::response::{Flash, Redirect};
+use rocket::request::{FlashMessage, Form};
 use serde_json;
 use tera::Context;
 
@@ -18,10 +17,13 @@ mod forms;
 pub mod models;
 
 #[get("/login")]
-fn login(user: AnonymousUser) -> Template {
-    let mut context = Context::new();
+fn login(user: AnonymousUser, flash: Option<FlashMessage>) -> Template {
+    let flash_message = flash.map(|msg| format!("{}: {}", msg.name(), msg.msg()))
+                 .unwrap_or_else(|| "Welcome!".to_string());
 
+    let mut context = Context::new();
     context.add("user", &user);
+    context.add("flash", &flash_message);
 
     Template::render("auth/login", &context)
 }
@@ -32,7 +34,7 @@ fn authenticate(
     form: Form<LoginForm>,
     mut cookies: Cookies,
     conn: DbConn,
-) -> Redirect {
+) -> Result<Redirect, Flash<Redirect>> {
     use super::schema::users::dsl::*;
 
     // Need to validate a few things
@@ -55,6 +57,10 @@ fn authenticate(
             .load::<User>(&*conn)
             .expect("Didn't find any users");
 
+        if found_users.len() == 0 {
+            return Err(Flash::error(Redirect::to("/auth/login"), "Invalid credentials"))
+        }
+
         let found_user = &found_users[0];
 
         if bcrypt::verify(&form.password, &found_user.password).unwrap() {
@@ -67,19 +73,21 @@ fn authenticate(
 
                 cookies.add_private(cookie);
             }
+        } else {
+            return Err(Flash::error(Redirect::to("/auth/login"), "Invalid credentials"))
         }
+
+
     }
 
-    Redirect::to("/")
+    Ok(Redirect::to("/"))
 }
 
 #[get("/logout")]
-fn logout(user: AuthenticatedUser, mut cookies: Cookies, conn:DbConn) -> Redirect {
+fn logout(user: AuthenticatedUser, mut cookies: Cookies) -> Redirect {
     cookies.remove_private(Cookie::named("sessions_auth"));
     Redirect::to("/")
 }
-
-// TODO: Register Path.
 
 pub fn routes() -> Vec<rocket::Route> {
     routes![authenticate, login, logout]
