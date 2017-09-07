@@ -7,6 +7,18 @@
     </head>
     <body>
         <div class="container">
+          <nav id="nav">
+          {% if user is defined %}
+              {% if user.is_anonymous %}
+                  <a href="/auth/login">> Login</a>
+              {% else %}
+                  <a href="/posts/new">> Create Post</a>
+                  <a href="/auth/logout">> Logout</a>
+              {% endif %}
+          {% else %}
+              <a href="/auth/login">> Login</a>
+          {% endif %}
+          </nav>
             {% block main %}{% endblock main %}
         </div>
     </body>

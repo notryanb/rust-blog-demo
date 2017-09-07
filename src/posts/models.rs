@@ -1,4 +1,4 @@
-use auth::models::{User};
+use auth::models::User;
 use schema::posts;
 
 #[derive(Associations, Identifiable, Queryable, Serialize)]
@@ -12,7 +12,7 @@ pub struct Post {
 }
 
 #[derive(Insertable)]
-#[table_name="posts"]
+#[table_name = "posts"]
 pub struct NewPost<'a> {
     pub user_id: i32,
     pub title: &'a str,
@@ -20,12 +20,10 @@ pub struct NewPost<'a> {
 }
 
 #[derive(AsChangeset)]
-#[table_name="posts"]
+#[table_name = "posts"]
 pub struct UpdatePost<'a> {
     pub user_id: Option<i32>,
     pub title: &'a str,
     pub content: &'a str,
     pub published: bool,
 }
-
-
