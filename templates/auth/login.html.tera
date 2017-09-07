@@ -3,6 +3,9 @@
 {% block main %}
     <a href="/">> Home</a>
     <h1>Login</h1>
+    {% if flash %}
+    <div>{{ flash }}</div>
+    {% endif %}
     <form id="login" method="post" action="/auth/login">
         <input name="email" type="text" placeholder="email" required>
         <input name="password" type="password" placeholder="password" required>
