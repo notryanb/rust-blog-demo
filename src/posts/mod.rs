@@ -82,7 +82,7 @@ fn create(user: AuthenticatedUser, form: Form<CreatePostForm>, conn: DbConn) -> 
     let post = form.get();
 
     let new_post = NewPost {
-        user_id: 1, // Hard code user Id
+        user_id: user.0.id,
         title: &post.title,
         content: &post.content,
     };
