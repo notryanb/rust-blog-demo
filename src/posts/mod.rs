@@ -48,10 +48,11 @@ fn show(user: User, post_id: i32, conn: DbConn) -> Template {
     Template::render("posts/show", &context.as_json().unwrap())
 }
 
-// TODO: Authenticate
 #[get("/new")]
-fn new(_user: AuthenticatedUser) -> Template {
-    let context = Context::new();
+fn new(user: AuthenticatedUser) -> Template {
+    let mut context = Context::new();
+
+    context.add("user", &user);
 
     Template::render("posts/new", &context)
 }
@@ -74,7 +75,6 @@ fn edit(user: AuthenticatedUser, post_id: i32, conn: DbConn) -> Template {
     Template::render("posts/edit", &context)
 }
 
-// TODO: Authenticate
 #[post("/create", data = "<form>")]
 fn create(user: AuthenticatedUser, form: Form<CreatePostForm>, conn: DbConn) -> Redirect {
     use schema::posts;
@@ -95,13 +95,14 @@ fn create(user: AuthenticatedUser, form: Form<CreatePostForm>, conn: DbConn) -> 
     Redirect::to("/")
 }
 
-
-// TODO: Authenticate
 #[post("/update", data = "<form>")]
 fn update(user: AuthenticatedUser, form: Form<UpdatePostForm>, conn: DbConn) -> Redirect {
     use super::schema::posts::dsl::*;
 
     // TODO: Check auth.id == post.user_id
+    // Redirect to root
+    // Flash err -> Not Authorized for action
+
     let data = form.get();
 
     let update_post = UpdatePost {
@@ -119,10 +120,51 @@ fn update(user: AuthenticatedUser, form: Form<UpdatePostForm>, conn: DbConn) -> 
     Redirect::to("/")
 }
 
-// TODO: Delete Post
-// TODO: Authenticate
+#[get("/delete/<post_id>")]
+fn confirm_delete(user: AuthenticatedUser, post_id: i32, conn: DbConn) -> Template {
+    use super::schema::posts::dsl::*;
+    
+    // TODO: Check auth.id == post.user_id
+    // Redirect to root
+    // Flash err -> Not Authorized for action
+    // Need to change return type
 
+    let mut context = Context::new();
+
+    let post = posts
+        .find(post_id)
+        .get_result::<Post>(&*conn)
+        .expect("Error loading post");
+
+    context.add("post", &post);
+    context.add("user", &user);
+
+    Template::render("posts/delete", &context)
+}
+
+#[post("/destroy", data = "<form>")]
+fn destroy(user: AuthenticatedUser, form: Form<DeletePostForm>, conn: DbConn) -> Redirect {
+    use super::schema::posts::dsl::*;
+    
+    // TODO: Check auth.id == post.user_id
+    // Redirect to root
+    // Flash err -> Not Authorized for action
+    // Need to change return type
+
+    let data = form.get();
+    let post = posts.find(&data.id)
+        .get_result::<Post>(&*conn)
+        .expect("Error loading post");
+
+    diesel::delete(&post)
+        .execute(&*conn)
+        .expect("Error deleting post");
+
+    // TODO: Flash success to main page that the post was deleted
+    // Need to change return type
+    Redirect::to("/")
+}
 
 pub fn routes() -> Vec<rocket::Route> {
-    routes![index, create, edit, new, show, update]
+    routes![index, create, confirm_delete, destroy, edit, new, show, update]
 }
