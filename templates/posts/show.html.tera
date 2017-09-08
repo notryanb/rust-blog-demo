@@ -1,15 +1,15 @@
 {% extends "main" %}
 
 {% block main %}
-    <a href="/">> Home</a>
-          {% if user is defined %}
-              {% if user.is_anonymous %}
-              {% else %}
-                  <a href="/posts/edit/{{ post.id }}">> Edit This Post</a>
-              {% endif %}
-          {% endif %}
-    <article class="post">
-        <h2>{{ post.title }}</h2>
-        <p>{{ post.content }}</p>
-    </article>
+  {% if user is defined %}
+    {% if user.is_anonymous %}
+    {% else %}
+        <a href="/posts/edit/{{ post.id }}">Edit</a>
+        <a href="/posts/delete/{{ post.id }}">Delete</a>
+    {% endif %}
+  {% endif %}
+  <article class="post">
+    <h2>{{ post.title }}</h2>
+    <p>{{ post.content }}</p>
+  </article>
 {% endblock main %}

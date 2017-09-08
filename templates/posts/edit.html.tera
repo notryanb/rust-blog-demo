@@ -1,9 +1,8 @@
 {% extends "main" %}
 
 {% block main %}
-    <a href="/">> Home</a>
     <h1>Edit a Post</h1>
-    <form id="new-post" method="post" action="/posts/update">
+    <form id="edit-post" method="post" action="/posts/update">
         <input name="id" type="hidden" value="{{ post.id }}" required>
         <input name="title" type="text" placeholder="{{ post.title }}" required>
         <textarea name="content" rows=10 columns = 50 placeholder="{{ post.content }}" required></textarea>

@@ -1,7 +1,6 @@
 {% extends "main" %}
 
 {% block main %}
-    <a href="/">> Home</a>
     <h1>Login</h1>
     {% if flash %}
       <div class="flash-err">{{ flash.name}} - {{ flash.msg }}</div>
