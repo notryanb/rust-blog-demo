@@ -4,7 +4,7 @@
     <a href="/">> Home</a>
     <h1>Login</h1>
     {% if flash %}
-    <div>{{ flash }}</div>
+      <div class="flash-err">{{ flash.name}} - {{ flash.msg }}</div>
     {% endif %}
     <form id="login" method="post" action="/auth/login">
         <input name="email" type="text" placeholder="email" required>

@@ -16,14 +16,26 @@ use self::forms::*;
 mod forms;
 pub mod models;
 
+#[derive(Serialize)]
+struct InvalidCredentialsMessage<'a> {
+    name: &'a str,
+    msg: &'a str
+}
+
 #[get("/login")]
 fn login(user: AnonymousUser, flash: Option<FlashMessage>) -> Template {
-    let flash_message = flash.map(|msg| format!("{}: {}", msg.name(), msg.msg()))
-                 .unwrap_or_else(|| "Welcome!".to_string());
-
     let mut context = Context::new();
     context.add("user", &user);
-    context.add("flash", &flash_message);
+
+    if flash.is_some() {
+        let flash_val = flash.unwrap();
+        let message = InvalidCredentialsMessage {
+            name: &flash_val.name(),
+            msg: &flash_val.msg()
+        };
+
+        context.add("flash", &message);
+    }
 
     Template::render("auth/login", &context)
 }
@@ -36,18 +48,6 @@ fn authenticate(
     conn: DbConn,
 ) -> Result<Redirect, Flash<Redirect>> {
     use super::schema::users::dsl::*;
-
-    // Need to validate a few things
-    //      1. Find user || error semantically (Flash messages from Rocket?)
-    //      2. Invalid pw || error semantically (Flash messages from Rocket?)
-    //      3. Already logged in, redirect. (also, don't allow in the UI)
-    //
-    //  * Think about User states. Need AuthenticatedUser?
-    //  * In either error case, just report user or password not found
-    //  * Make illegal states unrepresentable....aka, UnAuthenticatedUser..?
-    //  * Think about serialization...The password.. even hashed shouldn't be
-    //      available to the client at all. Need to custom implement Serialize
-    //      trait for user?
 
     if cookies.get("sessions_auth").is_none() {
         let form = form.get();

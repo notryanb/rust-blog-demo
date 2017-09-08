@@ -32,3 +32,9 @@ a:hover {
   background-color: #212121;
   color: #efefef;
 }
+
+div.flash-err {
+  background: tomato;
+  color: #efefef;
+  padding: 0.5rem;
+}

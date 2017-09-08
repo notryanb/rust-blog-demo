@@ -1,6 +1,6 @@
-// Influenced heavily from
+// Influenced heavily from Bastien Orivel's repo
 // https://git.bananium.fr/eijebong/bananium.rs/blob/master/src/auth/models.rs
-// Look into refactoring...
+// Look into refactoring
 
 use rocket::outcome::Outcome::*;
 use rocket::http::Status;
