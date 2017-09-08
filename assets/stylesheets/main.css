@@ -38,3 +38,30 @@ div.flash-err {
   color: #efefef;
   padding: 0.5rem;
 }
+
+.btn {
+  padding: 0.5rem;
+  border: 0;
+  font-size: 1rem;
+}
+
+.warning {
+  background: tomato;
+  color: #efefef;
+}
+
+.info {
+  background: #00bcd4;
+}
+
+button a {
+  border: none;
+}
+
+button a:hover {
+  background: none;
+}
+
+button:hover {
+  background: #212121; 
+}

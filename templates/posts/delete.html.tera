@@ -11,6 +11,9 @@
         <input name="id" type="hidden" value="{{ post.id }}" required>
         <button type="submit" class="btn warning">Delete Post</button>
     </form>
-    <a href="/" class="btn">Cancel</a>
+
+    <button class="btn info">
+      <a href="/">Cancel</a>
+    </button>
 {% endblock main %}
 
