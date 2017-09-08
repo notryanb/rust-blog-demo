@@ -1,0 +1,16 @@
+{% extends "main" %}
+
+{% block main %}
+    <h1>Delete Post</h1>
+
+    <p>Are you sure you want to delete this post?</p>
+    <p>Title: {{ post.title }}</p>
+    <p>Content: {{ post.content }}</p>
+
+    <form id="delete-post" method="post" action="/posts/destroy">
+        <input name="id" type="hidden" value="{{ post.id }}" required>
+        <button type="submit" class="btn warning">Delete Post</button>
+    </form>
+    <a href="/" class="btn">Cancel</a>
+{% endblock main %}
+
