@@ -10,3 +10,8 @@ pub struct CreatePostForm {
     pub title: String,
     pub content: String,
 }
+
+#[derive(FromForm)]
+pub struct DeletePostForm {
+    pub id: i32,
+}
