@@ -1,5 +1,5 @@
-use rocket::request::FromFormValue;
 use rocket::http::RawStr;
+use rocket::request::FromFormValue;
 
 #[derive(Debug, FromForm, Serialize)]
 pub struct LoginForm {
@@ -8,6 +8,9 @@ pub struct LoginForm {
 }
 
 pub struct UserField(pub String);
+pub struct FieldPresenceError<'a> { 
+    pub msg: &'a str 
+}
 
 impl<'v> FromFormValue<'v> for UserField {
     type Error = &'v RawStr;
@@ -29,5 +32,20 @@ pub struct RegisterForm {
     pub email: Option<UserField>,
     pub password: Option<UserField>,
     pub password_confirm: Option<UserField>,
+}
+
+impl RegisterForm {
+    pub fn validate_fields_presence(&self) -> Result<&Self, FieldPresenceError> {
+        if self.first_name.is_some() &&
+            self.last_name.is_some() &&
+            self.email.is_some() &&
+            self.password.is_some() &&
+            self.password_confirm.is_some()
+            {
+                return Ok(self);
+            }
+
+        Err(FieldPresenceError { msg: "All fields must be filled out" })
+    }
 }
 

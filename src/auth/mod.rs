@@ -109,18 +109,6 @@ fn signup(user: AnonymousUser, flash: Option<FlashMessage>) -> Template {
     Template::render("auth/register", &context)
 }
 
-fn validate_presence(form: &RegisterForm) -> bool {
-   if form.first_name.is_none() || 
-        form.last_name.is_none() ||
-        form.email.is_none() ||
-        form.password.is_none() ||
-        form.password_confirm.is_none() 
-    { 
-        return false; 
-    }
-   true
-}
-
 #[post("/register", data = "<form>")]
 fn register(
     user: AnonymousUser,
@@ -135,13 +123,16 @@ fn register(
     
 
     // STEPS
-    // 1 - Validate presence of all fields (first/last_name, email, pw)
-    
-    let form = form.get();
-    if validate_presence(form) {
-    } else {
-        return Err(Flash::error(Redirect::to("/auth/register"), "All fields must be completed"))
-    }
+    // 1 - Validate presence of all fields
+   
+    // Validation should return Result<FormType>
+    // see if we can chain the logic right on to execute the redirect
+    // or unwrap into the var
+
+    let form = match form.get().validate_fields_presence().as_ref() {
+        Ok(ref val) => val,
+        Err(e) => Err(Flash::error(Redirect::to("/auth/register"), e.msg))
+    };
     
     // 2 - Validate no other User with that email
 
