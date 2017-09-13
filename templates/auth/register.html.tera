@@ -1,0 +1,13 @@
+{% extends "main" %}
+
+{% block main %}
+    <h1>Register</h1>
+    {% block flash %}{% endblock flash %}
+    <form id="register" method="post" action="/auth/register">
+        <input name="email" type="text" placeholder="email" required>
+        <input name="password" type="password" placeholder="password" required>
+        <input name="password_confirm" type="password" placeholder="password confirm" required>
+        <button type="submit">Register</button>
+    </form>
+{% endblock main %}
+
