@@ -1,4 +1,6 @@
 use bcrypt;
+use bcrypt::{DEFAULT_COST, hash};
+use diesel;
 use diesel::prelude::*;
 use rocket;
 use rocket_contrib::Template;
@@ -90,7 +92,7 @@ fn logout(user: AuthenticatedUser, mut cookies: Cookies) -> Redirect {
 }
 
 #[get("/register")]
-fn register(user: AnonymousUser, flash: Option<FlashMessage>) -> Template {
+fn signup(user: AnonymousUser, flash: Option<FlashMessage>) -> Template {
     let mut context = Context::new();
     context.add("user", &user);
 
@@ -107,6 +109,55 @@ fn register(user: AnonymousUser, flash: Option<FlashMessage>) -> Template {
     Template::render("auth/register", &context)
 }
 
+#[post("/register", data = "<form>")]
+fn register(
+    user: AnonymousUser,
+    form: Form<RegisterForm>,
+    conn: DbConn
+) -> Result<Redirect, Flash<Redirect>> {
+    use schema::users;
+
+    let mut context = Context::new();
+    context.add("user", &user);
+    
+    let form = form.get();
+
+    // STEPS
+    // 1 - Validate all fields (first/last_name, email, pw)
+
+    // 2 - Validate no other User with that email
+
+    // let found_user = users.filter(email.eq(&form.email)
+
+    // 3 - Validate PW == PW_CONFIRM
+    
+    if &form.password != &form.password_confirm {
+        return Err(Flash::error(Redirect::to("/auth/register"), "Passwords must match"))
+    }
+
+    // 4 - Hash the PW
+
+    let secured_password = match hash (&form.password, DEFAULT_COST) {
+        Ok(h) => h,
+        Err(_) => panic!("Error hashing")
+    };
+
+    // 5 - Insert Email & Username into DB
+    
+    let new_user = NewUser {
+        first_name: &form.first_name,
+        last_name: &form.last_name,
+        email: &form.email,
+        password: &secured_password
+    };
+
+    diesel::insert(&new_user).into(users::table)
+        .get_result::<User>(&*conn)
+        .expect("Error inserting user");
+
+    Ok(Redirect::to("/auth/login"))
+}
+
 pub fn routes() -> Vec<rocket::Route> {
-    routes![authenticate, login, logout, register]
+    routes![authenticate, login, logout, signup, register]
 }
