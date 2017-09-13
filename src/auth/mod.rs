@@ -109,6 +109,18 @@ fn signup(user: AnonymousUser, flash: Option<FlashMessage>) -> Template {
     Template::render("auth/register", &context)
 }
 
+fn validate_presence(form: &RegisterForm) -> bool {
+   if form.first_name.is_none() || 
+        form.last_name.is_none() ||
+        form.email.is_none() ||
+        form.password.is_none() ||
+        form.password_confirm.is_none() 
+    { 
+        return false; 
+    }
+   true
+}
+
 #[post("/register", data = "<form>")]
 fn register(
     user: AnonymousUser,
@@ -121,14 +133,19 @@ fn register(
     let mut context = Context::new();
     context.add("user", &user);
     
-    let form = form.get();
 
     // STEPS
-    // 1 - Validate all fields (first/last_name, email, pw)
-
+    // 1 - Validate presence of all fields (first/last_name, email, pw)
+    
+    let form = form.get();
+    if validate_presence(form) {
+    } else {
+        return Err(Flash::error(Redirect::to("/auth/register"), "All fields must be completed"))
+    }
+    
     // 2 - Validate no other User with that email
 
-    let found_user = users.filter(email.eq(&form.email))
+    let found_user = users.filter(email.eq(&form.email.as_ref().unwrap().0))
         .get_results::<User>(&*conn)
         .expect("Error loading users");
 
@@ -138,13 +155,13 @@ fn register(
 
     // 3 - Validate PW == PW_CONFIRM
     
-    if &form.password != &form.password_confirm {
+    if &form.password.as_ref().unwrap().0 != &form.password_confirm.as_ref().unwrap().0 {
         return Err(Flash::error(Redirect::to("/auth/register"), "Passwords must match"))
     }
 
     // 4 - Hash the PW
 
-    let secured_password = match hash (&form.password, DEFAULT_COST) {
+    let secured_password = match hash (&form.password.as_ref().unwrap().0, DEFAULT_COST) {
         Ok(h) => h,
         Err(_) => panic!("Error hashing")
     };
@@ -152,9 +169,9 @@ fn register(
     // 5 - Insert Email & Username into DB
 
     let new_user = NewUser {
-        first_name: &form.first_name,
-        last_name: &form.last_name,
-        email: &form.email,
+        first_name: &form.first_name.as_ref().unwrap().0,
+        last_name: &form.last_name.as_ref().unwrap().0,
+        email: &form.email.as_ref().unwrap().0,
         password: &secured_password
     };
 
