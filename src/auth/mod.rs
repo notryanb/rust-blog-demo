@@ -17,7 +17,7 @@ mod forms;
 pub mod models;
 
 #[derive(Serialize)]
-struct InvalidCredentialsMessage<'a> {
+struct InvalidFormMessage<'a> {
     name: &'a str,
     msg: &'a str
 }
@@ -29,7 +29,7 @@ fn login(user: AnonymousUser, flash: Option<FlashMessage>) -> Template {
 
     if flash.is_some() {
         let flash_val = flash.unwrap();
-        let message = InvalidCredentialsMessage {
+        let message = InvalidFormMessage {
             name: &flash_val.name(),
             msg: &flash_val.msg()
         };
@@ -87,6 +87,24 @@ fn authenticate(
 fn logout(user: AuthenticatedUser, mut cookies: Cookies) -> Redirect {
     cookies.remove_private(Cookie::named("sessions_auth"));
     Redirect::to("/")
+}
+
+#[get("/register")]
+fn register(user: AnonymousUser, flash: Option<FlashMessage>) -> Template {
+    let mut context = Context::new();
+    context.add("user", &user);
+
+    if flash.is_some() {
+        let flash_val = flash.unwrap();
+        let message = InvalidFormMessage {
+            name: &flash_val.name(),
+            msg: &flash_val.msg()
+        };
+
+        context.add("flash", &message);
+    }
+
+    Template::render("auth/register", &context)
 }
 
 pub fn routes() -> Vec<rocket::Route> {
