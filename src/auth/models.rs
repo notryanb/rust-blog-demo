@@ -24,6 +24,7 @@ pub struct User {
     #[serde(skip_serializing, skip_deserializing)] pub password: String,
 }
 
+// TODO: derive(FromForm) so we don't need duplicate form structs
 #[derive(Insertable)]
 #[table_name = "users"]
 pub struct NewUser<'a> {
@@ -33,6 +34,10 @@ pub struct NewUser<'a> {
     pub password: &'a str,
 }
 
+
+// TODO: derive(FromForm) so we don't need duplicate form structs
+// also, after the above refactoring, see if we can combine update and new
+// as they will most likely have the same fields when all features are impl'd
 #[derive(AsChangeset)]
 #[table_name = "users"]
 pub struct UpdateUser<'a> {

@@ -115,6 +115,7 @@ fn register(
     form: Form<RegisterForm>,
     conn: DbConn
 ) -> Result<Redirect, Flash<Redirect>> {
+    use super::schema::users::dsl::*;
     use schema::users;
 
     let mut context = Context::new();
@@ -127,7 +128,13 @@ fn register(
 
     // 2 - Validate no other User with that email
 
-    // let found_user = users.filter(email.eq(&form.email)
+    let found_user = users.filter(email.eq(&form.email))
+        .get_results::<User>(&*conn)
+        .expect("Error loading users");
+
+    if found_user.len() > 0 {
+        return Err(Flash::error(Redirect::to("/auth/register"), "Email already taken"))
+    }
 
     // 3 - Validate PW == PW_CONFIRM
     
@@ -143,7 +150,7 @@ fn register(
     };
 
     // 5 - Insert Email & Username into DB
-    
+
     let new_user = NewUser {
         first_name: &form.first_name,
         last_name: &form.last_name,
