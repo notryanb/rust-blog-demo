@@ -30,6 +30,7 @@ pub struct NewUser<'a> {
     pub first_name: &'a str,
     pub last_name: &'a str,
     pub email: &'a str,
+    pub password: &'a str,
 }
 
 #[derive(AsChangeset)]
