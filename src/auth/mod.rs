@@ -108,5 +108,5 @@ fn register(user: AnonymousUser, flash: Option<FlashMessage>) -> Template {
 }
 
 pub fn routes() -> Vec<rocket::Route> {
-    routes![authenticate, login, logout]
+    routes![authenticate, login, logout, register]
 }
