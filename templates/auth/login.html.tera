@@ -2,9 +2,14 @@
 
 {% block main %}
     <h1>Login</h1>
+    <div>
+        <a href="/auth/register">Register</a>
+    </div>
+
     {% if flash %}
-      <div class="flash-err">{{ flash.name}} - {{ flash.msg }}</div>
+        <div class="flash-err">{{ flash.name }} - {{ flash.msg }} </div>
     {% endif %}
+
     <form id="login" method="post" action="/auth/login">
         <input name="email" type="text" placeholder="email" required>
         <input name="password" type="password" placeholder="password" required>
