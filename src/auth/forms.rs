@@ -9,14 +9,13 @@ pub struct LoginForm {
 
 pub struct UserField(pub String);
 pub struct FieldPresenceError<'a> { 
-    pub msg: &'a str 
+    pub msg: &'a str,
 }
 
 impl<'v> FromFormValue<'v> for UserField {
     type Error = &'v RawStr;
 
     fn from_form_value(form_value: &'v RawStr) -> Result<UserField, &'v RawStr> {
-        println!("THE VALUE COMING THROUGH: |{}|", &form_value);
         match form_value.percent_decode() {
             Ok(ref val) if val.is_empty() => Err(form_value),
             Ok(ref val) => Ok(UserField(val.to_string())),
