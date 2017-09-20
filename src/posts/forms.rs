@@ -15,3 +15,10 @@ pub struct CreatePostForm {
 pub struct DeletePostForm {
     pub id: i32,
 }
+
+#[derive(Serialize)]
+pub struct InvalidFormMessage<'a> {
+    pub name: &'a str,
+    pub msg: &'a str
+}
+
