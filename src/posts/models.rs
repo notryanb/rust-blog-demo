@@ -11,6 +11,15 @@ pub struct Post {
     pub published: bool,
 }
 
+#[derive(Debug, Queryable)]
+pub struct PostWithUser{
+    pub title: String,
+    pub content: String,
+    pub published: bool,
+    pub first_name: String,
+    pub last_name: String,
+}
+
 #[derive(Insertable)]
 #[table_name = "posts"]
 pub struct NewPost<'a> {

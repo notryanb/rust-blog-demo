@@ -34,7 +34,8 @@ fn index(user: User, conn: DbConn) -> Template {
 #[get("/show/<post_id>")]
 fn show(user: User, flash: Option<FlashMessage>, post_id: i32, conn: DbConn) -> Template {
     use super::schema::posts::dsl::*;
-
+    use super::schema::users::dsl::*;
+    
     let mut context = Context::new();
 
     if flash.is_some() {
@@ -46,6 +47,24 @@ fn show(user: User, flash: Option<FlashMessage>, post_id: i32, conn: DbConn) -> 
 
         context.add("flash", &message);
     }
+    
+    // TODO Joins User to display user info
+
+    let base_query = posts.find(post_id);
+    let post_with_user = base_query.inner_join(users)
+        .select(
+            (
+            title,
+            content,
+            published,
+            first_name,
+            last_name,
+            )
+        )
+        .load::<PostWithUser>(&*conn);
+
+    // TODO - use result and get all appropriate info for page
+    println!("Post w/ User: {:?}", post_with_user);
 
     let post = posts
         .find(post_id)
