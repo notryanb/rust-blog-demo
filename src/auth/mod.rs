@@ -86,7 +86,7 @@ fn authenticate(
 }
 
 #[get("/logout")]
-fn logout(user: AuthenticatedUser, mut cookies: Cookies) -> Redirect {
+fn logout(_user: AuthenticatedUser, mut cookies: Cookies) -> Redirect {
     cookies.remove_private(Cookie::named("sessions_auth"));
     Redirect::to("/")
 }
@@ -124,14 +124,10 @@ fn register(
 
     // STEPS
     // 1 - Validate presence of all fields
-   
-    // Validation should return Result<FormType>
-    // see if we can chain the logic right on to execute the redirect
-    // or unwrap into the var
 
-    let form = match form.get().validate_fields_presence().as_ref() {
-        Ok(ref val) => val,
-        Err(e) => Err(Flash::error(Redirect::to("/auth/register"), e.msg))
+    let form = match form.get().validate_fields_presence() {
+        Ok(val) => val,
+        Err(e) => return Err(Flash::error(Redirect::to("/auth/register"), e.msg))
     };
     
     // 2 - Validate no other User with that email
