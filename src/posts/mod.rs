@@ -9,8 +9,8 @@ use super::DbConn;
 use diesel;
 use diesel::prelude::*;
 use rocket;
-use rocket::request::Form;
-use rocket::response::Redirect;
+use rocket::request::{Form, FlashMessage};
+use rocket::response::{Flash, Redirect};
 use rocket_contrib::Template;
 use tera::Context;
 
@@ -32,10 +32,20 @@ fn index(user: User, conn: DbConn) -> Template {
 }
 
 #[get("/show/<post_id>")]
-fn show(user: User, post_id: i32, conn: DbConn) -> Template {
+fn show(user: User, flash: Option<FlashMessage>, post_id: i32, conn: DbConn) -> Template {
     use super::schema::posts::dsl::*;
 
     let mut context = Context::new();
+
+    if flash.is_some() {
+        let flash_val = flash.unwrap();
+        let message = InvalidFormMessage {
+            name: &flash_val.name(),
+            msg: &flash_val.msg()
+        };
+
+        context.add("flash", &message);
+    }
 
     let post = posts
         .find(post_id)
@@ -59,20 +69,26 @@ fn new(user: AuthenticatedUser) -> Template {
 
 // TODO: Authenticate
 #[get("/edit/<post_id>")]
-fn edit(user: AuthenticatedUser, post_id: i32, conn: DbConn) -> Template {
+fn edit(user: AuthenticatedUser, post_id: i32, conn: DbConn) -> Result<Template, Flash<Redirect>>{
     use super::schema::posts::dsl::*;
 
     let mut context = Context::new();
+    context.add("user", &user);
 
     let post = posts
         .find(post_id)
         .get_result::<Post>(&*conn)
         .expect("Error loading posts");
 
-    context.add("post", &post);
-    context.add("user", &user);
+    if user.0.id != post.user_id {
+        let url = &format!("/posts/show/{}", post_id)[..];
+        return Err(Flash::error(Redirect::to(url), "Unauthorized Action"))
+    }
 
-    Template::render("posts/edit", &context)
+
+    context.add("post", &post);
+
+    Ok(Template::render("posts/edit", &context))
 }
 
 #[post("/create", data = "<form>")]
