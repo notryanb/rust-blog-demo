@@ -4,9 +4,14 @@
   {% if user is defined %}
     {% if user.is_anonymous %}
     {% else %}
+      {% if user.id == post.user_id %}
         <a href="/posts/edit/{{ post.id }}">Edit</a>
         <a href="/posts/delete/{{ post.id }}">Delete</a>
+      {% endif %}
     {% endif %}
+  {% endif %}
+  {% if flash %}
+      <div class="flash-err">{{ flash.name }} - {{ flash.msg }} </div>
   {% endif %}
   <article class="post">
     <h2>{{ post.title }}</h2>
