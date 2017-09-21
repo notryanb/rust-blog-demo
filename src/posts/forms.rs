@@ -1,6 +1,7 @@
 #[derive(FromForm)]
 pub struct UpdatePostForm {
     pub id: i32,
+    pub user_id: i32,
     pub title: String,
     pub content: String,
 }
@@ -19,6 +20,6 @@ pub struct DeletePostForm {
 #[derive(Serialize)]
 pub struct InvalidFormMessage<'a> {
     pub name: &'a str,
-    pub msg: &'a str
+    pub msg: &'a str,
 }
 
