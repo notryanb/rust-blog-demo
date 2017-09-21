@@ -1,6 +1,7 @@
 use serde::ser;
 use serde::ser::SerializeStruct;
 
+use DbConn;
 use auth::models::User;
 use schema::posts;
 
@@ -32,7 +33,7 @@ impl ser::Serialize for PostWithAuthor {
     {
         let mut s = serializer.serialize_struct("PostWithAuthor", 6)?;
         s.serialize_field("id", &self.id)?;
-        s.serialize_field("user_id", &self.id)?;
+        s.serialize_field("user_id", &self.user_id)?;
         s.serialize_field("title", &self.title)?;
         s.serialize_field("content", &self.content)?;
         s.serialize_field("published", &self.published)?;
@@ -44,6 +45,30 @@ impl ser::Serialize for PostWithAuthor {
 impl PostWithAuthor {
     pub fn display_name(&self) -> String {
         format!("{} {}", self.first_name, self.last_name)
+    }
+    
+    pub fn find(post_id: i32, conn: DbConn) -> PostWithAuthor {
+        use diesel::prelude::*;
+        use schema::posts::dsl::*;
+
+        use schema::users;
+        use schema::posts;
+
+        let base_query = posts.find(post_id);
+        base_query.inner_join(users::table)
+            .select(
+                (
+                    posts::id,
+                    posts::user_id,
+                    posts::title,
+                    posts::content,
+                    posts::published,
+                    users::first_name,
+                    users::last_name,
+                )
+            )
+            .first::<PostWithAuthor>(&*conn)
+            .expect("Error loading post")
     }
 }
 
