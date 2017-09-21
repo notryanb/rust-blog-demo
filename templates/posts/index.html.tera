@@ -5,7 +5,7 @@
         <h1>Rust Blog</h1>
         {% for post in posts %}
             <div class="post-item">
-              <span><a href="/posts/show/{{ post.id }}">{{ post.title }}</a></span>
+              <span><a href="/posts/show/{{ post.id }}">{{ post.title }}</a> - by {{ post.display_name }}</span>
             </div>
         {% endfor %}
     </article>

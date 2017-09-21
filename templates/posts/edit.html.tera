@@ -4,6 +4,7 @@
     <h1>Edit a Post</h1>
     <form id="edit-post" method="post" action="/posts/update">
         <input name="id" type="hidden" value="{{ post.id }}" required>
+        <input name="user_id" type="hidden" value="{{ post.user_id }}" required>
         <input name="title" type="text" placeholder="{{ post.title }}" required>
         <textarea name="content" rows=10 columns = 50 placeholder="{{ post.content }}" required></textarea>
         <button type="submit">Submit Post</button>
