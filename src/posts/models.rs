@@ -50,7 +50,6 @@ impl PostWithAuthor {
     pub fn find(post_id: i32, conn: DbConn) -> PostWithAuthor {
         use diesel::prelude::*;
         use schema::posts::dsl::*;
-
         use schema::users;
         use schema::posts;
 
@@ -68,6 +67,29 @@ impl PostWithAuthor {
                 )
             )
             .first::<PostWithAuthor>(&*conn)
+            .expect("Error loading post")
+    }
+
+    pub fn load_all(conn: DbConn) -> Vec<PostWithAuthor> {
+        use diesel::prelude::*;
+        use schema::posts::dsl::*;
+        use schema::users;
+        use schema::posts;
+
+        posts.inner_join(users::table)
+            .select(
+                (
+                    posts::id,
+                    posts::user_id,
+                    posts::title,
+                    posts::content,
+                    posts::published,
+                    users::first_name,
+                    users::last_name,
+                )
+            )
+            .order(id.desc())
+            .get_results::<PostWithAuthor>(&*conn)
             .expect("Error loading post")
     }
 }
