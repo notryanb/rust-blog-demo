@@ -19,7 +19,7 @@ impl<'v> FromFormValue<'v> for UserField {
         match form_value.percent_decode() {
             Ok(ref val) if val.is_empty() => Err(form_value),
             Ok(ref val) => Ok(UserField(val.to_string())),
-            Err(ref val) => Err(form_value)
+            Err(_val) => Err(form_value)
         }
     }
 }
