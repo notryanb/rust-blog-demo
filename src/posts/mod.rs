@@ -35,6 +35,7 @@ fn index(user: User, conn: DbConn) -> Template {
 fn show(user: User, flash: Option<FlashMessage>, post_id: i32, conn: DbConn) -> Template {
     use super::schema::posts::dsl::*;
     use super::schema::users::dsl::*;
+    use schema::posts;
     
     let mut context = Context::new();
 
@@ -48,30 +49,23 @@ fn show(user: User, flash: Option<FlashMessage>, post_id: i32, conn: DbConn) -> 
         context.add("flash", &message);
     }
     
-    // TODO Joins User to display user info
-
     let base_query = posts.find(post_id);
-    let post_with_user = base_query.inner_join(users)
+    let post_with_author = base_query.inner_join(users)
         .select(
             (
-            title,
-            content,
-            published,
-            first_name,
-            last_name,
+                posts::id,
+                user_id,
+                title,
+                content,
+                published,
+                first_name,
+                last_name,
             )
         )
-        .load::<PostWithUser>(&*conn);
+        .first::<PostWithAuthor>(&*conn)
+        .expect("Error loading post");
 
-    // TODO - use result and get all appropriate info for page
-    println!("Post w/ User: {:?}", post_with_user);
-
-    let post = posts
-        .find(post_id)
-        .get_result::<Post>(&*conn)
-        .expect("Error loading posts");
-
-    context.add("post", &post);
+    context.add("post", &post_with_author);
     context.add("user", &user);
 
     Template::render("posts/show", &context.as_json().unwrap())

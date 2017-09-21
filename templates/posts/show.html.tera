@@ -14,7 +14,7 @@
       <div class="flash-err">{{ flash.name }} - {{ flash.msg }} </div>
   {% endif %}
   <article class="post">
-    <h2>{{ post.title }}</h2>
+    <h2>{{ post.title }} by {{ post.display_name }}</h2>
     <p>{{ post.content }}</p>
   </article>
 {% endblock main %}
