@@ -44,7 +44,7 @@ fn login(user: AnonymousUser, flash: Option<FlashMessage>) -> Template {
 
 #[post("/login", data = "<form>")]
 fn authenticate(
-    user: AnonymousUser,
+    _user: AnonymousUser,
     form: Form<LoginForm>,
     mut cookies: Cookies,
     conn: DbConn,
