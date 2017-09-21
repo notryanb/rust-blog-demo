@@ -1,10 +1,7 @@
-pub mod models;
-mod forms;
-
 use self::models::*;
 use self::forms::*;
 use auth::models::*;
-use super::DbConn;
+use DbConn;
 
 use diesel;
 use diesel::prelude::*;
@@ -13,6 +10,9 @@ use rocket::request::{Form, FlashMessage};
 use rocket::response::{Flash, Redirect};
 use rocket_contrib::Template;
 use tera::Context;
+
+pub mod models;
+mod forms;
 
 #[get("/")]
 fn index(user: User, conn: DbConn) -> Template {
@@ -33,10 +33,6 @@ fn index(user: User, conn: DbConn) -> Template {
 
 #[get("/show/<post_id>")]
 fn show(user: User, flash: Option<FlashMessage>, post_id: i32, conn: DbConn) -> Template {
-    use super::schema::posts::dsl::*;
-    use super::schema::users::dsl::*;
-    use schema::posts;
-    
     let mut context = Context::new();
 
     if flash.is_some() {
@@ -48,27 +44,13 @@ fn show(user: User, flash: Option<FlashMessage>, post_id: i32, conn: DbConn) -> 
 
         context.add("flash", &message);
     }
-    
-    let base_query = posts.find(post_id);
-    let post_with_author = base_query.inner_join(users)
-        .select(
-            (
-                posts::id,
-                user_id,
-                title,
-                content,
-                published,
-                first_name,
-                last_name,
-            )
-        )
-        .first::<PostWithAuthor>(&*conn)
-        .expect("Error loading post");
+   
+    let post_with_author = PostWithAuthor::find(post_id, conn);
 
     context.add("post", &post_with_author);
     context.add("user", &user);
 
-    Template::render("posts/show", &context.as_json().unwrap())
+    Template::render("posts/show", &context)
 }
 
 #[get("/new")]
@@ -97,7 +79,6 @@ fn edit(user: AuthenticatedUser, post_id: i32, conn: DbConn) -> Result<Template,
         let url = &format!("/posts/show/{}", post_id)[..];
         return Err(Flash::error(Redirect::to(url), "Unauthorized Action"))
     }
-
 
     context.add("post", &post);
 
@@ -150,14 +131,9 @@ fn update(user: AuthenticatedUser, form: Form<UpdatePostForm>, conn: DbConn) -> 
 }
 
 #[get("/delete/<post_id>")]
-fn confirm_delete(user: AuthenticatedUser, post_id: i32, conn: DbConn) -> Template {
+fn confirm_delete(user: AuthenticatedUser, post_id: i32, conn: DbConn) -> Result<Template, Flash<Redirect>> {
     use super::schema::posts::dsl::*;
     
-    // TODO: Check auth.id == post.user_id
-    // Redirect to root
-    // Flash err -> Not Authorized for action
-    // Need to change return type
-
     let mut context = Context::new();
 
     let post = posts
@@ -165,10 +141,16 @@ fn confirm_delete(user: AuthenticatedUser, post_id: i32, conn: DbConn) -> Templa
         .get_result::<Post>(&*conn)
         .expect("Error loading post");
 
-    context.add("post", &post);
+    
+    if user.0.id != post.user_id {
+        let url = &format!("/posts/show/{}", post_id)[..];
+        return Err(Flash::error(Redirect::to(url), "Unauthorized Action"))
+    }
+    
     context.add("user", &user);
+    context.add("post", &post);
 
-    Template::render("posts/delete", &context)
+    Ok(Template::render("posts/delete", &context))
 }
 
 #[post("/destroy", data = "<form>")]
