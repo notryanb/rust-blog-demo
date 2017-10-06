@@ -25,7 +25,7 @@ pub struct User {
 }
 
 // TODO: derive(FromForm) so we don't need duplicate form structs
-#[derive(Insertable)]
+#[derive(Debug, Insertable)]
 #[table_name = "users"]
 pub struct NewUser<'a> {
     pub first_name: &'a str,
@@ -34,6 +34,14 @@ pub struct NewUser<'a> {
     pub password: &'a str,
 }
 
+#[derive(Debug, Insertable)]
+#[table_name = "users"]
+pub struct BulkNewUser {
+    pub first_name: String,
+    pub last_name: String,
+    pub email: String,
+    pub password: String,
+}
 
 // TODO: derive(FromForm) so we don't need duplicate form structs
 // also, after the above refactoring, see if we can combine update and new

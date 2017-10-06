@@ -5,7 +5,7 @@ use DbConn;
 use auth::models::User;
 use schema::posts;
 
-#[derive(Associations, Identifiable, Queryable, Serialize)]
+#[derive(Debug, Associations, Identifiable, Queryable, Serialize)]
 #[belongs_to(User)]
 pub struct Post {
     pub id: i32,
@@ -100,6 +100,14 @@ pub struct NewPost<'a> {
     pub user_id: i32,
     pub title: &'a str,
     pub content: &'a str,
+}
+
+#[derive(Insertable)]
+#[table_name = "posts"]
+pub struct BulkNewPost {
+    pub user_id: i32,
+    pub title: String,
+    pub content: String,
 }
 
 #[derive(AsChangeset)]
