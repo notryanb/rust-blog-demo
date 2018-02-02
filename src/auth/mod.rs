@@ -1,4 +1,6 @@
 use bcrypt;
+use bcrypt::{DEFAULT_COST, hash};
+use diesel;
 use diesel::prelude::*;
 use rocket;
 use rocket_contrib::Template;
@@ -17,7 +19,7 @@ mod forms;
 pub mod models;
 
 #[derive(Serialize)]
-struct InvalidCredentialsMessage<'a> {
+struct InvalidFormMessage<'a> {
     name: &'a str,
     msg: &'a str
 }
@@ -29,7 +31,7 @@ fn login(user: AnonymousUser, flash: Option<FlashMessage>) -> Template {
 
     if flash.is_some() {
         let flash_val = flash.unwrap();
-        let message = InvalidCredentialsMessage {
+        let message = InvalidFormMessage {
             name: &flash_val.name(),
             msg: &flash_val.msg()
         };
@@ -42,7 +44,7 @@ fn login(user: AnonymousUser, flash: Option<FlashMessage>) -> Template {
 
 #[post("/login", data = "<form>")]
 fn authenticate(
-    user: AnonymousUser,
+    _user: AnonymousUser,
     form: Form<LoginForm>,
     mut cookies: Cookies,
     conn: DbConn,
@@ -84,11 +86,146 @@ fn authenticate(
 }
 
 #[get("/logout")]
-fn logout(user: AuthenticatedUser, mut cookies: Cookies) -> Redirect {
+fn logout(_user: AuthenticatedUser, mut cookies: Cookies) -> Redirect {
     cookies.remove_private(Cookie::named("sessions_auth"));
     Redirect::to("/")
 }
 
+#[get("/settings")]
+fn settings(user: AuthenticatedUser, flash: Option<FlashMessage>) -> Template {
+    let mut context = Context::new();
+    context.add("user", &user);
+    
+    if flash.is_some() {
+        let flash_val = flash.unwrap();
+        let message = InvalidFormMessage {
+            name: &flash_val.name(),
+            msg: &flash_val.msg()
+        };
+
+        context.add("flash", &message);
+    }
+    
+    Template::render("auth/settings", &context)
+}
+
+#[post("/settings", data="<form>")]
+fn update_user_settings(
+    user: AuthenticatedUser,
+    form: Form<RegisterForm>,
+    conn: DbConn
+) -> Result<Redirect, Flash<Redirect>> {
+    use super::schema::users::dsl::*;
+
+    let mut context = Context::new();
+    context.add("user", &user);
+    
+    let form = form.get();
+
+    if &form.password.as_ref().unwrap().0 != &form.password_confirm.as_ref().unwrap().0 {
+        return Err(Flash::error(Redirect::to("/auth/register"), "Passwords must match"))
+    }
+
+    let secured_password = match hash (&form.password.as_ref().unwrap().0, DEFAULT_COST) {
+        Ok(h) => h,
+        Err(_) => panic!("Error hashing")
+    };
+
+    let updated_user = UpdateUser {
+        first_name: &form.first_name.as_ref().unwrap().0,
+        last_name: &form.last_name.as_ref().unwrap().0,
+        email: &form.email.as_ref().unwrap().0,
+        password: &secured_password
+    };
+
+    println!("UserID: {:?}", &form.id.unwrap());
+
+    diesel::update(users.find(form.id.unwrap()))
+        .set(&updated_user)
+        .get_result::<User>(&*conn)
+        .expect("Error updating user");
+
+    Ok(Redirect::to("/"))
+}
+
+#[get("/register")]
+fn signup(user: AnonymousUser, flash: Option<FlashMessage>) -> Template {
+    let mut context = Context::new();
+    context.add("user", &user);
+
+    if flash.is_some() {
+        let flash_val = flash.unwrap();
+        let message = InvalidFormMessage {
+            name: &flash_val.name(),
+            msg: &flash_val.msg()
+        };
+
+        context.add("flash", &message);
+    }
+
+    Template::render("auth/register", &context)
+}
+
+#[post("/register", data = "<form>")]
+fn register(
+    user: AnonymousUser,
+    form: Form<RegisterForm>,
+    conn: DbConn
+) -> Result<Redirect, Flash<Redirect>> {
+    use super::schema::users::dsl::*;
+    use schema::users;
+
+    let mut context = Context::new();
+    context.add("user", &user);
+    
+
+    // STEPS
+    // 1 - Validate presence of all fields
+
+    let form = match form.get().validate_fields_presence() {
+        Ok(val) => val,
+        Err(e) => return Err(Flash::error(Redirect::to("/auth/register"), e.msg))
+    };
+    
+    // 2 - Validate no other User with that email
+
+    let found_user = users.filter(email.eq(&form.email.as_ref().unwrap().0))
+        .get_results::<User>(&*conn)
+        .expect("Error loading users");
+
+    if found_user.len() > 0 {
+        return Err(Flash::error(Redirect::to("/auth/register"), "Email already taken"))
+    }
+
+    // 3 - Validate PW == PW_CONFIRM
+    
+    if &form.password.as_ref().unwrap().0 != &form.password_confirm.as_ref().unwrap().0 {
+        return Err(Flash::error(Redirect::to("/auth/register"), "Passwords must match"))
+    }
+
+    // 4 - Hash the PW
+
+    let secured_password = match hash (&form.password.as_ref().unwrap().0, DEFAULT_COST) {
+        Ok(h) => h,
+        Err(_) => panic!("Error hashing")
+    };
+
+    // 5 - Insert Email & Username into DB
+
+    let new_user = NewUser {
+        first_name: &form.first_name.as_ref().unwrap().0,
+        last_name: &form.last_name.as_ref().unwrap().0,
+        email: &form.email.as_ref().unwrap().0,
+        password: &secured_password
+    };
+
+    diesel::insert(&new_user).into(users::table)
+        .get_result::<User>(&*conn)
+        .expect("Error inserting user");
+
+    Ok(Redirect::to("/auth/login"))
+}
+
 pub fn routes() -> Vec<rocket::Route> {
-    routes![authenticate, login, logout]
+    routes![authenticate, login, logout, signup, register, settings, update_user_settings]
 }

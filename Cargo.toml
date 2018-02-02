@@ -4,8 +4,12 @@ version = "0.1.0"
 authors = ["Ryan B <notryanb@gmail.com>"]
 
 [[bin]]
-name = "blog_demo"
+name = "main"
 path = "src/bin/main.rs"
+
+[[bin]]
+name = "seed"
+path = "src/bin/seed.rs"
 
 [lib]
 name = "bloglib"
@@ -28,6 +32,7 @@ diesel = { version = "0.16", features = ["chrono", "postgres"] }
 diesel_codegen = { version = "*", features = ["postgres"] }
 r2d2 = "*"
 r2d2-diesel = "*"
+fake = "*"
 
 # SYS
 dotenv = "0.10"

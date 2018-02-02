@@ -13,6 +13,7 @@
                     <a href="/auth/login">> Login</a>
                 {% else %}
                     <a href="/posts/new">> Create Post</a>
+                    <a href="/auth/settings">> User Settings</a>
                     <a href="/auth/logout">> Logout</a>
                 {% endif %}
               </nav>
