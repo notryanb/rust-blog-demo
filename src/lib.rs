@@ -3,25 +3,26 @@
 #![plugin(rocket_codegen)]
 
 extern crate bcrypt;
-#[macro_use]
-extern crate diesel;
-#[macro_use]
-extern crate diesel_derives;
+#[macro_use] extern crate diesel;
+#[macro_use] extern crate diesel_derives;
+#[macro_use] extern crate diesel_infer_schema;
+extern crate dotenv;
 extern crate rocket;
 extern crate rocket_contrib;
 extern crate serde;
-#[macro_use]
-extern crate serde_derive;
+#[macro_use] extern crate serde_derive;
 extern crate serde_json;
 extern crate tera;
 
 use dotenv::dotenv;
 use diesel::prelude::*;
-use r2d2::{Config, Pool, PooledConnection};
-use r2d2_diesel::ConnectionManager;
+use diesel::r2d2::{Config, Pool, PooledConnection};
+// use r2d2_diesel::ConnectionManager;
+//
 use rocket::{Outcome, Request, State};
 use rocket::http::Status;
 use rocket::request::{self, FromRequest};
+
 use std::env;
 use std::ops::Deref;
 
