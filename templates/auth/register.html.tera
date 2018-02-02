@@ -7,7 +7,7 @@
         <div class="flash-err">{{ flash.name }} - {{ flash.msg }} </div>
     {% endif %}
 
-    <form id="register" method="post" action="/auth/register">
+    <form id="register" method="POST" action="/auth/register">
         <input name="first_name" type="text" placeholder="first name" required>
         <input name="last_name" type="text" placeholder="last name" required>
         <input name="email" type="text" placeholder="email" required>

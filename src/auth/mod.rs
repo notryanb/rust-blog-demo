@@ -91,6 +91,63 @@ fn logout(_user: AuthenticatedUser, mut cookies: Cookies) -> Redirect {
     Redirect::to("/")
 }
 
+#[get("/settings")]
+fn settings(user: AuthenticatedUser, flash: Option<FlashMessage>) -> Template {
+    let mut context = Context::new();
+    context.add("user", &user);
+    
+    if flash.is_some() {
+        let flash_val = flash.unwrap();
+        let message = InvalidFormMessage {
+            name: &flash_val.name(),
+            msg: &flash_val.msg()
+        };
+
+        context.add("flash", &message);
+    }
+    
+    Template::render("auth/settings", &context)
+}
+
+#[post("/settings", data="<form>")]
+fn update_user_settings(
+    user: AuthenticatedUser,
+    form: Form<RegisterForm>,
+    conn: DbConn
+) -> Result<Redirect, Flash<Redirect>> {
+    use super::schema::users::dsl::*;
+
+    let mut context = Context::new();
+    context.add("user", &user);
+    
+    let form = form.get();
+
+    if &form.password.as_ref().unwrap().0 != &form.password_confirm.as_ref().unwrap().0 {
+        return Err(Flash::error(Redirect::to("/auth/register"), "Passwords must match"))
+    }
+
+    let secured_password = match hash (&form.password.as_ref().unwrap().0, DEFAULT_COST) {
+        Ok(h) => h,
+        Err(_) => panic!("Error hashing")
+    };
+
+    let updated_user = UpdateUser {
+        first_name: &form.first_name.as_ref().unwrap().0,
+        last_name: &form.last_name.as_ref().unwrap().0,
+        email: &form.email.as_ref().unwrap().0,
+        password: &secured_password
+    };
+
+    println!("UserID: {:?}", &form.id.unwrap());
+
+    diesel::update(users.find(form.id.unwrap()))
+        .set(&updated_user)
+        .get_result::<User>(&*conn)
+        .expect("Error updating user");
+
+    Ok(Redirect::to("/"))
+}
+
 #[get("/register")]
 fn signup(user: AnonymousUser, flash: Option<FlashMessage>) -> Template {
     let mut context = Context::new();
@@ -170,5 +227,5 @@ fn register(
 }
 
 pub fn routes() -> Vec<rocket::Route> {
-    routes![authenticate, login, logout, signup, register]
+    routes![authenticate, login, logout, signup, register, settings, update_user_settings]
 }

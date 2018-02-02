@@ -1,0 +1,20 @@
+{% extends "main" %}
+
+{% block main %}
+    <h1>Edit User Settings</h1>
+
+    {% if flash %}
+        <div class="flash-err">{{ flash.name }} - {{ flash.msg }} </div>
+    {% endif %}
+
+    <form id="user_settings" method="POST" action="/auth/settings">
+        <input name="id" type="hidden" value={{ user.id }}>
+        <input name="first_name" type="text" placeholder="first name" value={{ user.first_name }}>
+        <input name="last_name" type="text" placeholder="last name" value={{ user.last_name }}>
+        <input name="email" type="text" placeholder="email" value={{ user.email }}>
+        <input name="password" type="password" placeholder="password" required>
+        <input name="password_confirm" type="password" placeholder="password confirm" required>
+        <button type="submit">Register</button>
+    </form>
+{% endblock main %}
+

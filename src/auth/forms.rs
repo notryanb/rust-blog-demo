@@ -26,6 +26,7 @@ impl<'v> FromFormValue<'v> for UserField {
 
 #[derive(FromForm)]
 pub struct RegisterForm {
+    pub id: Option<i32>,
     pub first_name: Option<UserField>,
     pub last_name: Option<UserField>,
     pub email: Option<UserField>,
@@ -47,4 +48,3 @@ impl RegisterForm {
         Err(FieldPresenceError { msg: "All fields must be filled out" })
     }
 }
-

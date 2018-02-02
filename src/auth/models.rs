@@ -52,6 +52,7 @@ pub struct UpdateUser<'a> {
     pub first_name: &'a str,
     pub last_name: &'a str,
     pub email: &'a str,
+    pub password: &'a str,
 }
 
 impl ser::Serialize for User {
