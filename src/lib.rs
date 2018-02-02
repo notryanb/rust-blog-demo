@@ -18,15 +18,13 @@ use dotenv::dotenv;
 use diesel::prelude::*;
 use diesel::PgConnection;
 use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
-// use r2d2_diesel::ConnectionManager;
-//
+
 use rocket::{Outcome, Request, State};
 use rocket::http::Status;
 use rocket::request::{self, FromRequest};
 
 use std::env;
 use std::ops::Deref;
-use std::thread;
 
 pub mod schema;
 pub mod posts;
