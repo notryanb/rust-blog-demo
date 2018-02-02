@@ -1,6 +1,6 @@
 [package]
 name = "blog_demo"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Ryan B <notryanb@gmail.com>"]
 
 [[bin]]
@@ -17,24 +17,22 @@ path = "src/lib.rs"
 
 [dependencies]
 # Server
-rocket = "0.3.0"
-rocket_codegen = "0.3.2"
-rocket_contrib = { version = "0.3.2", default-features = false, features = ["tera_templates"] }
+rocket = "0.3.6"
+rocket_codegen = "0.3.6"
+rocket_contrib = { version = "0.3.6", default-features = false, features = ["tera_templates"] }
 serde = "1.0.11"
-serde_derive = "1.0.11"
-serde_json = "1.0.2"
-tera = "0.10"
+serde_derive = "1.0.27"
+serde_json = "1.0.9"
+tera = "0.11.2"
 
 # DB
-bcrypt = "0.1"
+bcrypt = "0.1.5"
 chrono = { version = "0.4.0", features=["serde"] }
-diesel = { version = "0.16", features = ["chrono", "postgres"] }
-diesel_codegen = { version = "*", features = ["postgres"] }
-r2d2 = "*"
-r2d2-diesel = "*"
-fake = "*"
+diesel = { version = "1.1.1", features = ["chrono", "postgres", "r2d2"] }
+diesel_derives = { version = "1.1.0", features = ["postgres"] }
+fake = "1.2.1"
 
 # SYS
-dotenv = "0.10"
+dotenv = "0.10.1"
 
 
