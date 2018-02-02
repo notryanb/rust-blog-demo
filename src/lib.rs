@@ -16,7 +16,8 @@ extern crate tera;
 
 use dotenv::dotenv;
 use diesel::prelude::*;
-use diesel::r2d2::{Config, Pool, PooledConnection};
+use diesel::PgConnection;
+use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
 // use r2d2_diesel::ConnectionManager;
 //
 use rocket::{Outcome, Request, State};
@@ -25,6 +26,7 @@ use rocket::request::{self, FromRequest};
 
 use std::env;
 use std::ops::Deref;
+use std::thread;
 
 pub mod schema;
 pub mod posts;
@@ -34,10 +36,8 @@ pub fn create_db_pool() -> Pool<ConnectionManager<PgConnection>> {
     dotenv().ok();
 
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-
-    let config = Config::default();
     let manager = ConnectionManager::<PgConnection>::new(database_url);
-    Pool::new(config, manager).expect("Failed to create pool.")
+    Pool::builder().build(manager).expect("Failed to create pool")
 }
 
 pub struct DbConn(PooledConnection<ConnectionManager<PgConnection>>);
