@@ -91,8 +91,8 @@ fn create(user: AuthenticatedUser, form: Form<CreatePostForm>, conn: DbConn) -> 
         content: &post.content,
     };
 
-    diesel::insert(&new_post)
-        .into(posts::table)
+    diesel::insert_into(posts::table)
+        .values(&new_post)
         .get_result::<Post>(&*conn)
         .expect("Error saving new post");
 

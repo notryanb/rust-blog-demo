@@ -3,28 +3,26 @@
 #![plugin(rocket_codegen)]
 
 extern crate bcrypt;
-#[macro_use]
-extern crate diesel;
-#[macro_use]
-extern crate diesel_codegen;
+#[macro_use] extern crate diesel;
+#[macro_use] extern crate diesel_derives;
+#[macro_use] extern crate diesel_infer_schema;
 extern crate dotenv;
-extern crate r2d2;
-extern crate r2d2_diesel;
 extern crate rocket;
 extern crate rocket_contrib;
 extern crate serde;
-#[macro_use]
-extern crate serde_derive;
+#[macro_use] extern crate serde_derive;
 extern crate serde_json;
 extern crate tera;
 
 use dotenv::dotenv;
 use diesel::prelude::*;
-use r2d2::{Config, Pool, PooledConnection};
-use r2d2_diesel::ConnectionManager;
+use diesel::PgConnection;
+use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
+
 use rocket::{Outcome, Request, State};
 use rocket::http::Status;
 use rocket::request::{self, FromRequest};
+
 use std::env;
 use std::ops::Deref;
 
@@ -36,10 +34,8 @@ pub fn create_db_pool() -> Pool<ConnectionManager<PgConnection>> {
     dotenv().ok();
 
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-
-    let config = Config::default();
     let manager = ConnectionManager::<PgConnection>::new(database_url);
-    Pool::new(config, manager).expect("Failed to create pool.")
+    Pool::builder().build(manager).expect("Failed to create pool")
 }
 
 pub struct DbConn(PooledConnection<ConnectionManager<PgConnection>>);

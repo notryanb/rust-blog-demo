@@ -219,7 +219,8 @@ fn register(
         password: &secured_password
     };
 
-    diesel::insert(&new_user).into(users::table)
+    diesel::insert_into(users::table)
+        .values(&new_user)
         .get_result::<User>(&*conn)
         .expect("Error inserting user");
 
