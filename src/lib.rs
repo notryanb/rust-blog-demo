@@ -5,7 +5,6 @@
 extern crate bcrypt;
 #[macro_use] extern crate diesel;
 #[macro_use] extern crate diesel_derives;
-#[macro_use] extern crate diesel_infer_schema;
 extern crate dotenv;
 extern crate rocket;
 extern crate rocket_contrib;

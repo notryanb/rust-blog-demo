@@ -55,8 +55,8 @@ fn main() {
         password: &hashed_password[..],
     };
     
-    diesel::insert(&me)
-        .into(users)
+    diesel::insert_into(users)
+        .values(&me)
         .execute(&*connection)
         .expect("Error inserting users");
 
@@ -66,8 +66,8 @@ fn main() {
         .collect();
 
     // Insert that vec of users and get a vec back of the inserts
-    let returned_users = diesel::insert(&new_user_list)
-        .into(users)
+    let returned_users = diesel::insert_into(users)
+        .values(&new_user_list)
         .get_results::<User>(&*connection)
         .expect("Error inserting users");
 
@@ -78,8 +78,8 @@ fn main() {
         .collect();
 
     // Insert those posts
-    diesel::insert(&new_post_list)
-        .into(posts)
+    diesel::insert_into(posts)
+        .values(&new_post_list)
         .execute(&*connection)
         .expect("Error inserting posts");
 }
